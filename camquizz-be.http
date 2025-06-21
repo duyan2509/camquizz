@@ -1,0 +1,6 @@
+@camquizz_be_HostAddress = http://localhost:5263
+
+GET {{camquizz_be_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
