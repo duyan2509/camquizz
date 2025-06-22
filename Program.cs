@@ -10,7 +10,7 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
-
+using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 // ----------------------------
@@ -31,6 +31,7 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 builder.Services.AddRouting(options => options.LowercaseUrls = true); 
 builder.Services.AddSignalR();

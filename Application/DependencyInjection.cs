@@ -10,7 +10,10 @@ public static class DependencyInjection
     {
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IMailService, MailService>();
-        
+        services.AddScoped<IGenreService, GenreService>();
+        services.AddScoped<IQuestionService, QuestionService>();
+        services.AddScoped<IAnswerService, AnswerService>();
+        services.AddScoped<IQuizzService, QuizzService>();
         services.AddSingleton<JwtService>();
 
         return services;

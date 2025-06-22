@@ -21,7 +21,10 @@ public static class DependencyInjection
         // Register repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
-
+        services.AddScoped<IGenreRepository, GenreRepository>();
+        services.AddScoped<IQuestionRepository, QuestionRepository>();
+        services.AddScoped<IAnswerRepository, AnswerRepository>();
+        services.AddScoped<IQuizzRepository, QuizzRepository>();
         return services;
     }
 }
