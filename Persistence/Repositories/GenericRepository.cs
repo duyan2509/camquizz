@@ -19,7 +19,7 @@ public class GenericRepository<T> : IGenericRepository<T>
 
     public virtual async Task<T?> GetByIdAsync(Guid id)
     {
-        return await _dbSet.FindAsync(id);
+        return await _dbSet.FirstOrDefaultAsync(e => e.Id == id);
     }
 
     public virtual async Task<IEnumerable<T>> GetAllAsync()
@@ -46,7 +46,7 @@ public class GenericRepository<T> : IGenericRepository<T>
         return entity;
     }
 
-    public virtual async Task DeleteAsync(Guid id)
+    public virtual async Task SoftDeleteAsync(Guid id)
     {
         var entity = await GetByIdAsync(id);
         if (entity != null)
@@ -55,6 +55,7 @@ public class GenericRepository<T> : IGenericRepository<T>
             await _context.SaveChangesAsync();
         }
     }
+
 
     public virtual async Task<bool> ExistsAsync(Guid id)
     {
@@ -77,5 +78,19 @@ public class GenericRepository<T> : IGenericRepository<T>
             Page = pageNumber,
             Size = pageSize,
         };
+    }
+    public virtual async Task<T?> GetByIdIncludingDeletedAsync(Guid id)
+    {
+        return await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id);
+    }
+
+    public async Task HardDeleteAsync(Guid id)
+    {
+        var entity = await GetByIdAsync(id);
+        if (entity != null)
+        {
+            _dbSet.Remove(entity);
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -12,8 +12,12 @@ public interface IGenericRepository<T>
     Task<IEnumerable<T>> FindAsync(Func<T, bool> predicate);
     Task<T> AddAsync(T entity);
     Task<T> UpdateAsync(T entity);
-    Task DeleteAsync(Guid id);
+    Task SoftDeleteAsync(Guid id);
+    Task HardDeleteAsync(Guid id);
+
     Task<bool> ExistsAsync(Guid id);
     Task<int> CountAsync();
     Task<PagedResultDto<T>> GetPagedAsync(int pageNumber, int pageSize);
+    Task<T?> GetByIdIncludingDeletedAsync(Guid id);
+
 }
