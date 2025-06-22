@@ -75,7 +75,7 @@ public class UserService : IUserService
 
     public async Task DeleteAsync(Guid id)
     {
-        await _userRepository.DeleteAsync(id);
+        await _userRepository.SoftDeleteAsync(id);
     }
 
     public async Task<LoginResponseDto> LoginAsync(LoginDto loginDto)
