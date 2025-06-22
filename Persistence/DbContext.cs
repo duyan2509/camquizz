@@ -11,6 +11,14 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<Role> Roles { get; set; }
+    public DbSet<Genre> Genres { get; set; }
+
+    public DbSet<Quizz> Quizzes { get; set; }
+    public DbSet<Question> Questions { get; set; }
+
+    public DbSet<Answer> Answers { get; set; }
+
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,9 +40,42 @@ public class ApplicationDbContext : DbContext
         });
         modelBuilder.Entity<Role>()
             .Property(r => r.Name)
-            .HasConversion<int>(); 
+            .HasConversion<int>();
+
+        modelBuilder.Entity<Genre>(entity =>
+        {
+            entity.HasMany(e => e.Quizzes)
+                .WithOne(q => q.Genre)
+                .HasForeignKey(q => q.GenreId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+        modelBuilder.Entity<Quizz>(entity =>
+        {
+            entity.HasMany(e=>e.Questions)
+                  .WithOne(q=>q.Quizz)
+                  .HasForeignKey(q=>q.QuizzId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<Question>(entity =>
+        {
+            entity.HasMany(e=>e.Answers)
+                .WithOne(a=>a.Question)
+                .HasForeignKey(a=>a.QuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
         // Global query filter for soft delete
-        modelBuilder.Entity<User>().HasQueryFilter(e => !e.IsDeleted);
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
+            {
+                var method = typeof(DbContextExtensions)
+                    .GetMethod(nameof(DbContextExtensions.AddIsDeletedFilter), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)!
+                    .MakeGenericMethod(entityType.ClrType);
+
+                method.Invoke(null, new object[] { modelBuilder });
+            }
+        }
+
 
         // Seed
         modelBuilder.Entity<Role>().HasData(
@@ -65,4 +106,12 @@ public class ApplicationDbContext : DbContext
 
         return base.SaveChangesAsync(cancellationToken);
     }
+    public static class DbContextExtensions
+    {
+        public static void AddIsDeletedFilter<TEntity>(ModelBuilder builder) where TEntity : BaseEntity
+        {
+            builder.Entity<TEntity>().HasQueryFilter(e => !e.IsDeleted);
+        }
+    }
+
 }

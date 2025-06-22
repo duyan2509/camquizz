@@ -4,6 +4,7 @@ using CamQuizz.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CamQuizz.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250622101932_QuizzQuestionAnswer")]
+    partial class QuizzQuestionAnswer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,8 +33,8 @@ namespace CamQuizz.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -78,8 +81,8 @@ namespace CamQuizz.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -97,8 +100,8 @@ namespace CamQuizz.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -106,8 +109,8 @@ namespace CamQuizz.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DurationSecond")
-                        .HasColumnType("int");
+                    b.Property<TimeOnly>("DurationSecond")
+                        .HasColumnType("time");
 
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
@@ -137,9 +140,6 @@ namespace CamQuizz.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AuthorId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -150,6 +150,7 @@ namespace CamQuizz.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Image")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
@@ -157,8 +158,8 @@ namespace CamQuizz.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<int>("NumberOfAttemps")
                         .HasColumnType("int");
@@ -170,8 +171,6 @@ namespace CamQuizz.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AuthorId");
 
                     b.HasIndex("GenreId");
 
@@ -297,18 +296,10 @@ namespace CamQuizz.Migrations
 
             modelBuilder.Entity("CamQuizz.Domain.Entities.Quizz", b =>
                 {
-                    b.HasOne("CamQuizz.Domain.Entities.User", "Author")
-                        .WithMany("Quizzes")
-                        .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("CamQuizz.Domain.Entities.Genre", "Genre")
                         .WithMany("Quizzes")
                         .HasForeignKey("GenreId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Author");
 
                     b.Navigation("Genre");
                 });
@@ -342,11 +333,6 @@ namespace CamQuizz.Migrations
             modelBuilder.Entity("CamQuizz.Domain.Entities.Role", b =>
                 {
                     b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("CamQuizz.Domain.Entities.User", b =>
-                {
-                    b.Navigation("Quizzes");
                 });
 #pragma warning restore 612, 618
         }
