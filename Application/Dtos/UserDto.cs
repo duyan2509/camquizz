@@ -66,17 +66,3 @@ public class LoginResponseDto
     public UserDto User { get; set; } = null!;
     public DateTime ExpiresAt { get; set; }
 }
-
-public class PagedRequestDto
-{
-    public int Page { get; set; } = 1;
-    public int Size { get; set; } = 10;
-}
-
-public class PagedResultDto<T>
-{
-    public IEnumerable<T> Data { get; set; } = new List<T>();
-    public int Total { get; set; }
-    public int Page { get; set; }
-    public int Size { get; set; }
-}
