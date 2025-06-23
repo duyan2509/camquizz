@@ -6,8 +6,8 @@ namespace CamQuizz.Persistence.Repositories;
 
 public class UserRepository : GenericRepository<User>, IUserRepository
 {
-    public UserRepository(ApplicationDbContext context)
-        : base(context) { }
+    public UserRepository(ApplicationDbContext context, ILogger<User> logger)
+        : base(context, logger) { }
 
     public async Task<User?> GetByUsernameAsync(string username)
     {

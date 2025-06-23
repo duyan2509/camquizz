@@ -6,7 +6,9 @@ namespace CamQuizz.Persistence.Repositories
 {
     public class AnswerRepository : GenericRepository<Answer>, IAnswerRepository
     {
-        public AnswerRepository(ApplicationDbContext context) : base(context)
+        public AnswerRepository(ApplicationDbContext context, ILogger<Answer> logger)
+        : base(context, logger)
+
         {
         }
 
