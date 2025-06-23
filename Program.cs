@@ -11,6 +11,9 @@ using Serilog;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System;
+using System.Security.Claims;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ----------------------------
@@ -40,6 +43,9 @@ builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Mapp
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 // Optional: Add CORS
 builder.Services.AddCors(options =>
 {
@@ -61,6 +67,8 @@ builder
             ValidateAudience = false,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = key,
+            NameClaimType = ClaimTypes.NameIdentifier,
+            RoleClaimType = ClaimTypes.Role           
         };
     });
 builder.Services.AddScoped<IAuthorizationHandler, BanCheckHandler>();
