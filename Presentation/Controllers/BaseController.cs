@@ -9,7 +9,7 @@ public abstract class BaseController : ControllerBase
 {
     protected Guid GetCurrentUserId()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userIdClaim = User.FindFirst("userId")?.Value;
         return userIdClaim != null ? Guid.Parse(userIdClaim) : Guid.Empty;
     }
 

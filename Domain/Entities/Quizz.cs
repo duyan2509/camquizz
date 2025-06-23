@@ -16,7 +16,7 @@ namespace CamQuizz.Domain.Entities
         public Guid? GenreId { get; set; }
 
         public QuizzStatus Status { get; set; } = QuizzStatus.Public;
-        public virtual ICollection<Question> Questions { get; set; }
+        public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
         public int NumberOfAttemps { get; set; }
         public Guid AuthorId { get; set; }
         public User Author { get; set; }

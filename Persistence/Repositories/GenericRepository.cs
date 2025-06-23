@@ -10,12 +10,15 @@ public class GenericRepository<T> : IGenericRepository<T>
 {
     protected readonly ApplicationDbContext _context;
     protected readonly DbSet<T> _dbSet;
+    protected readonly ILogger<T> _logger;
 
-    public GenericRepository(ApplicationDbContext context)
+    public GenericRepository(ApplicationDbContext context, ILogger<T> logger)
     {
         _context = context;
         _dbSet = context.Set<T>();
+        _logger = logger;
     }
+
 
     public virtual async Task<T?> GetByIdAsync(Guid id)
     {
