@@ -12,9 +12,21 @@ namespace CamQuizz.Persistence.Repositories
         {
         }
 
-        public async Task<ICollection<Answer>> AddRangeAsync(List<Answer> answers)
+        public async Task<List<Answer>> AddRangeAsync(List<Answer> answers)
         {
             await _dbSet.AddRangeAsync(answers);
+            await _context.SaveChangesAsync();
+            return answers;
+        }
+        public async Task<bool> DeleteRangeAsync(List<Answer> answers)
+        {
+            _dbSet.RemoveRange(answers);
+            await _context.SaveChangesAsync();
+            return true;    
+        }
+        public async Task<List<Answer>> UpdateRangeAsync(List<Answer> answers)
+        {
+            _dbSet.UpdateRange(answers);
             await _context.SaveChangesAsync();
             return answers;
         }

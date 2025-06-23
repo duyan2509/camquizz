@@ -9,10 +9,10 @@
     }
     public class AnswerDto
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
         public required string Content { get; set; }
 
         public string? Image { get; set; }
-        public bool IsCorrect { get; set; } 
+        public bool IsCorrect { get; set; } = false;
     }
 }

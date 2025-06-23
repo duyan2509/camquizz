@@ -13,7 +13,6 @@ namespace CamQuizz.Application.Services
     public class QuizzService : IQuizzService
     {
         private readonly IMapper _mapper;
-
         private readonly ApplicationDbContext _context;
         public readonly IQuizzRepository _quizzRepository;
         public readonly IQuestionRepository _questionRepository;
@@ -138,19 +137,22 @@ namespace CamQuizz.Application.Services
             await _quizzRepository.HardDeleteAsync(id);
             return true;
         }
-        public async Task<QuizzInfoDto> UpdateQuizInfoAsync(Guid id, UpdateQuizzDto updateQuizzDto)
+        public async Task<QuizzInfoDto> UpdateQuizInfoAsync(Guid id, UpdateQuizzDto updateQuizzDto, Guid userId)
         {
+            
             var quizz = await _quizzRepository.GetInfoByIdAsync(id);
             if (quizz == null)
                 throw new InvalidOperationException("Quizz is not found");
+            if(quizz.AuthorId != userId)
+                throw new UnauthorizedAccessException("You are not allowed to update this quizz.");
             if (updateQuizzDto.GenreId.HasValue)
-            {
-                var genre = await _genreRepository.GetByIdAsync(updateQuizzDto.GenreId.Value);
-                if (genre == null)
-                    throw new InvalidOperationException("Genre does not exist");
+                {
+                    var genre = await _genreRepository.GetByIdAsync(updateQuizzDto.GenreId.Value);
+                    if (genre == null)
+                        throw new InvalidOperationException("Genre does not exist");
 
-                quizz.GenreId = updateQuizzDto.GenreId.Value;
-            }
+                    quizz.GenreId = updateQuizzDto.GenreId.Value;
+                }
             if (updateQuizzDto.Status.HasValue &&
                 !Enum.IsDefined(typeof(QuizzStatus), updateQuizzDto.Status.Value))
             {

@@ -7,6 +7,7 @@ public class QuizzProfile : Profile
     public QuizzProfile()
     {
         CreateMap<Answer, AnswerDto>();
+
         CreateMap<Question, QuestionDto>()
             .ForMember(dest => dest.Answers, opt => opt.MapFrom(src => src.Answers));
         CreateMap<Quizz, QuizzInfoDto>()

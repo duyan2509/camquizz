@@ -12,10 +12,13 @@ namespace CamQuizz.Presentation.Controllers
     public class QuizzController : BaseController
     {
         private readonly IQuizzService _quizzService;
+        private readonly IQuestionService _questionService;
 
-        public QuizzController(IQuizzService quizzService)
+
+        public QuizzController(IQuizzService quizzService, IQuestionService questionService)
         {
             _quizzService = quizzService;
+            _questionService = questionService;
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<QuizzDto>> GetQuizzById(Guid id)
@@ -69,12 +72,17 @@ namespace CamQuizz.Presentation.Controllers
                 return BadRequest(ModelState);
             try
             {
-                var response = await _quizzService.UpdateQuizInfoAsync(id, updateQuizzDto);
+                Guid userId = GetCurrentUserId();
+                var response = await _quizzService.UpdateQuizInfoAsync(id, updateQuizzDto, userId);
                 return Ok(response);
             }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, new { message = ex.Message });
             }
         }
         [HttpGet("my-quizzes")]
@@ -86,6 +94,54 @@ namespace CamQuizz.Presentation.Controllers
             Guid userId = GetCurrentUserId();
             var result = await _quizzService.GetMyQuizzesAsync(request.Page, request.Size, quizzStatus, userId);
             return Ok(result);
+        }
+        [HttpPost("{quizzId}/question")]
+        public async Task<ActionResult<QuizzDto>> AddNewQuestion(Guid quizzId, [FromBody] CreateQuestionDto createQuizzDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            try
+            {
+                Guid userId = GetCurrentUserId();
+                var response = await _questionService.CreateAsync(createQuizzDto, quizzId, userId);
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpDelete("{quizzId}/question/{questionId}")]
+        public async Task<ActionResult<QuizzDto>> DeleteQuestion(Guid quizzId, Guid questionId)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            try
+            {
+                Guid userId = GetCurrentUserId();
+                var response = await _questionService.DeleteAsync(quizzId, questionId, userId);
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPut("{quizzId}/question/{questionId}")]
+        public async Task<ActionResult<QuizzDto>> AddNewQuestion(Guid quizzId,Guid questionId, QuestionDto questionDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            try
+            {
+                Guid userId = GetCurrentUserId();
+                var response = await _questionService.UpdateAsync(quizzId, questionDto, userId);
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }
