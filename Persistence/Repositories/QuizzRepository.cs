@@ -32,10 +32,33 @@ namespace CamQuizz.Persistence.Repositories
                 .ThenInclude(q => q.Answers)
                 .FirstOrDefaultAsync(q => q.Id == id);
         }
+        public async Task<PagedResultDto<Quizz>> GetQuizzesByGroupIdAsync(int page, int size, Guid groupId)
+        {
+            var query = _dbSet
+                .Include(quizz => quizz.QuizzShares)
+                .Include(quizz => quizz.Genre)
+                .Include(quizz => quizz.Author)
+                .Include(quizz => quizz.Questions)
+                .Where(quizz => quizz.QuizzShares.Any(qs => qs.GroupId == groupId));
+
+            int count = await query.CountAsync();
+
+            var quizzes = await query
+                .Skip((page - 1) * size)
+                .Take(size)
+                .ToListAsync();
+            return new PagedResultDto<Quizz>
+            {
+                Data = quizzes,
+                Page = page,
+                Size = size,
+                Total = count
+            };
+        }
         public async Task<PagedResultDto<Quizz>> GetMyQuizzesAsync(
-            int pageNumber, 
-            int pageSize, 
-            QuizzStatus? quizzStatus, 
+            int pageNumber,
+            int pageSize,
+            QuizzStatus? quizzStatus,
             Guid userId)
         {
             _logger.LogInformation("Page Number: {PageNumber} PageSize: {PageSize} QuizzStatus: {QuizzStatus} UserId: {UserId} ", pageNumber, pageSize, quizzStatus, userId);

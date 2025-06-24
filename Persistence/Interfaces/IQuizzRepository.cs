@@ -10,5 +10,6 @@ namespace CamQuizz.Persistence.Interfaces
         Task<Quizz?> GetInfoByIdAsync(Guid id);
         Task<Quizz?> GetFullByIdAsync(Guid id);
         Task<PagedResultDto<Quizz>> GetMyQuizzesAsync(int pageNumber, int pageSize, QuizzStatus? quizzStatus, Guid userId);
+        Task<PagedResultDto<Quizz>> GetQuizzesByGroupIdAsync(int page, int size, Guid groupId);
     }
 }

@@ -87,13 +87,29 @@ public class GenericRepository<T> : IGenericRepository<T>
         return await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task HardDeleteAsync(Guid id)
+    public virtual async Task HardDeleteAsync(Guid id)
     {
-        var entity = await GetByIdAsync(id);
-        if (entity != null)
+        _logger.LogInformation("Hard Delete: {id}", id);
+        try
         {
+            var entity = await GetByIdAsync(id);
+            if (entity == null)
+            {
+                _logger.LogWarning("Entity not found: {id}", id);
+                return;
+            }
+
+            _logger.LogInformation("Removing entity: {id}, state: {state}", id, _context.Entry(entity).State);
             _dbSet.Remove(entity);
-            await _context.SaveChangesAsync();
+
+            var affected = await _context.SaveChangesAsync();
+            _logger.LogInformation("Rows deleted: {affected}", affected);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during hard delete for id {id}", id);
+            throw;
         }
     }
+
 }

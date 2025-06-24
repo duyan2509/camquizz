@@ -14,6 +14,8 @@ public static class DependencyInjection
         services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IAnswerService, AnswerService>();
         services.AddScoped<IQuizzService, QuizzService>();
+        services.AddScoped<IGroupService, GroupService>();
+        services.AddScoped<IMemberService, MemberService>();
         services.AddSingleton<JwtService>();
 
         return services;
