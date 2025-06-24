@@ -20,5 +20,6 @@ namespace CamQuizz.Domain.Entities
         public int NumberOfAttemps { get; set; }
         public Guid AuthorId { get; set; }
         public User Author { get; set; }
+        public virtual ICollection<QuizzShare> QuizzShares { get; set; } = new List<QuizzShare>();
     }
 }
