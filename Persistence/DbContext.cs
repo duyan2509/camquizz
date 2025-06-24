@@ -17,6 +17,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Question> Questions { get; set; }
 
     public DbSet<Answer> Answers { get; set; }
+    public DbSet<Group> Groups { get; set; }
+    public DbSet<QuizzShare> QuizzShares { get; set; }
+    public DbSet<UserGroup> UserGroups { get; set; }
 
 
 
@@ -37,6 +40,11 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.Username).IsUnique();
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasOne(u => u.Role).WithMany(r => r.Users).HasForeignKey(u => u.RoleId);
+
+            entity.HasMany(entity => entity.UserGroups)
+                .WithOne(ug => ug.User)
+                .HasForeignKey(ug => ug.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
         });
         modelBuilder.Entity<Role>()
             .Property(r => r.Name)
@@ -62,6 +70,54 @@ public class ApplicationDbContext : DbContext
                 .WithOne(a=>a.Question)
                 .HasForeignKey(a=>a.QuestionId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<QuizzShare>(entity =>
+        {
+            entity.HasIndex(entity =>
+            new
+            {
+                entity.UserId,
+                entity.QuizzId,
+                entity.GroupId
+            })
+            .IsUnique();
+
+            entity.HasOne(entity => entity.User)
+                .WithMany(u => u.QuizzShares)
+                .HasForeignKey(entity => entity.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+
+            entity.HasOne(entity => entity.Group)
+                .WithMany(g => g.QuizzShares)
+                .HasForeignKey(entity => entity.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(entity => entity.Quizz)
+                .WithMany(q => q.QuizzShares)
+                .HasForeignKey(entity => entity.QuizzId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+        });
+        modelBuilder.Entity<Group>(entity =>
+        {
+            entity.HasIndex(entity =>
+            new
+            {
+                entity.OwnerId,
+                entity.Name
+            })
+            .IsUnique();
+        });
+        modelBuilder.Entity<UserGroup>(entity =>
+        {
+            entity.HasIndex(entity =>
+            new
+            {
+                entity.UserId,
+                entity.GroupId
+            })
+            .IsUnique();
         });
         // Global query filter for soft delete
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())

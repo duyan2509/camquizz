@@ -89,6 +89,40 @@ namespace CamQuizz.Migrations
                     b.ToTable("Genres");
                 });
 
+            modelBuilder.Entity("CamQuizz.Domain.Entities.Group", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Groups");
+                });
+
             modelBuilder.Entity("CamQuizz.Domain.Entities.Question", b =>
                 {
                     b.Property<Guid>("Id")
@@ -176,6 +210,48 @@ namespace CamQuizz.Migrations
                     b.HasIndex("GenreId");
 
                     b.ToTable("Quizzes");
+                });
+
+            modelBuilder.Entity("CamQuizz.Domain.Entities.QuizzShare", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsHide")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("QuizzId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("QuizzId");
+
+                    b.HasIndex("UserId", "QuizzId", "GroupId")
+                        .IsUnique();
+
+                    b.ToTable("QuizzShares");
                 });
 
             modelBuilder.Entity("CamQuizz.Domain.Entities.Role", b =>
@@ -273,6 +349,40 @@ namespace CamQuizz.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("CamQuizz.Domain.Entities.UserGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("UserId", "GroupId")
+                        .IsUnique();
+
+                    b.ToTable("UserGroups");
+                });
+
             modelBuilder.Entity("CamQuizz.Domain.Entities.Answer", b =>
                 {
                     b.HasOne("CamQuizz.Domain.Entities.Question", "Question")
@@ -282,6 +392,17 @@ namespace CamQuizz.Migrations
                         .IsRequired();
 
                     b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("CamQuizz.Domain.Entities.Group", b =>
+                {
+                    b.HasOne("CamQuizz.Domain.Entities.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("CamQuizz.Domain.Entities.Question", b =>
@@ -313,6 +434,33 @@ namespace CamQuizz.Migrations
                     b.Navigation("Genre");
                 });
 
+            modelBuilder.Entity("CamQuizz.Domain.Entities.QuizzShare", b =>
+                {
+                    b.HasOne("CamQuizz.Domain.Entities.Group", "Group")
+                        .WithMany("QuizzShares")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CamQuizz.Domain.Entities.Quizz", "Quizz")
+                        .WithMany("QuizzShares")
+                        .HasForeignKey("QuizzId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("CamQuizz.Domain.Entities.User", "User")
+                        .WithMany("QuizzShares")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Quizz");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("CamQuizz.Domain.Entities.User", b =>
                 {
                     b.HasOne("CamQuizz.Domain.Entities.Role", "Role")
@@ -324,9 +472,35 @@ namespace CamQuizz.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("CamQuizz.Domain.Entities.UserGroup", b =>
+                {
+                    b.HasOne("CamQuizz.Domain.Entities.Group", "Group")
+                        .WithMany("UserGroups")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CamQuizz.Domain.Entities.User", "User")
+                        .WithMany("UserGroups")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("CamQuizz.Domain.Entities.Genre", b =>
                 {
                     b.Navigation("Quizzes");
+                });
+
+            modelBuilder.Entity("CamQuizz.Domain.Entities.Group", b =>
+                {
+                    b.Navigation("QuizzShares");
+
+                    b.Navigation("UserGroups");
                 });
 
             modelBuilder.Entity("CamQuizz.Domain.Entities.Question", b =>
@@ -337,6 +511,8 @@ namespace CamQuizz.Migrations
             modelBuilder.Entity("CamQuizz.Domain.Entities.Quizz", b =>
                 {
                     b.Navigation("Questions");
+
+                    b.Navigation("QuizzShares");
                 });
 
             modelBuilder.Entity("CamQuizz.Domain.Entities.Role", b =>
@@ -346,7 +522,11 @@ namespace CamQuizz.Migrations
 
             modelBuilder.Entity("CamQuizz.Domain.Entities.User", b =>
                 {
+                    b.Navigation("QuizzShares");
+
                     b.Navigation("Quizzes");
+
+                    b.Navigation("UserGroups");
                 });
 #pragma warning restore 612, 618
         }
