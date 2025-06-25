@@ -18,6 +18,7 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
         );
 
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         // Register repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
@@ -28,7 +29,6 @@ public static class DependencyInjection
         services.AddScoped<IMemberRepository, MemberRepository>();
         services.AddScoped<IGroupRepository, GroupRepository>();
         services.AddScoped<IQuizzShareRepository, QuizzShareRepository>();
-
         return services;
     }
 }
