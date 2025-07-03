@@ -1,0 +1,319 @@
+###
+POST http://localhost/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "",
+  "email": "",
+  "password": "",
+  "firstName": "",
+  "lastName": "",
+  "phoneNumber": ""
+}
+
+###
+POST http://localhost/api/auth/login
+Content-Type: application/json
+
+###
+GET http://localhost/api/auth/me
+
+###
+GET http://localhost/api/auth/users/{{id}}
+
+###
+PUT http://localhost/api/auth/users/{{id}}
+Content-Type: application/json
+
+###
+GET http://localhost/api/auth/check-username/{{username}}
+
+###
+GET http://localhost/api/auth/check-email/{{email}}
+
+###
+GET http://localhost/api/auth/users?
+    Page={{$placeholder}}&
+    Size={{$placeholder}}&
+    request={{$placeholder}}
+
+###
+POST http://localhost/api/genre
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+###
+GET http://localhost/api/genre
+
+###
+PUT http://localhost/api/genre/{{id}}
+Content-Type: application/json
+
+###
+GET http://localhost/api/genre/{{id}}
+
+###
+DELETE http://localhost/api/genre/{{id}}
+
+###
+POST http://localhost/api/group
+Content-Type: application/json
+
+###
+PUT http://localhost/api/group/{{id}}?
+    request={{$placeholder}}&
+    isOwner={{$placeholder}}
+    Content-Type: application/json
+
+###
+GET http://localhost/api/group/{{id}}?
+    request={{$placeholder}}&
+    isOwner={{$placeholder}}&
+    Page={{$placeholder}}&
+    Size={{$placeholder}}
+
+###
+DELETE http://localhost/api/group/{{id}}?
+    request={{$placeholder}}&
+    isOwner={{$placeholder}}
+
+###
+GET http://localhost/api/group/my-groups?
+    Page={{$placeholder}}&
+    Size={{$placeholder}}&
+    isOwner={{$placeholder}}&
+    request={{$placeholder}}
+
+###
+GET http://localhost/api/group/{{groupId}}/quizz?
+    Page={{$placeholder}}&
+    Size={{$placeholder}}&
+    request={{$placeholder}}
+
+###
+POST http://localhost/api/group/member
+Content-Type: application/json
+
+{
+  "groupId": "",
+  "email": ""
+}
+
+###
+DELETE http://localhost/api/group/{{groupId}}/member/{{userId}}
+
+###
+POST http://localhost/api/group/leave
+Content-Type: application/json
+
+###
+GET http://localhost/api/group/{{groupId}}/members?
+    request={{$placeholder}}&
+    Page={{$placeholder}}&
+    Size={{$placeholder}}
+
+###
+GET http://localhost/api/quizz/{{id}}?
+    request={{$placeholder}}&
+    quizzStatus={{$placeholder}}&
+    Page={{$placeholder}}&
+    Size={{$placeholder}}
+
+###
+DELETE http://localhost/api/quizz/{{id}}?
+    request={{$placeholder}}&
+    quizzStatus={{$placeholder}}
+
+###
+PATCH http://localhost/api/quizz/{{id}}?
+    request={{$placeholder}}&
+    quizzStatus={{$placeholder}}
+    Content-Type: application/json
+
+###
+POST http://localhost/api/quizz
+Content-Type: application/json
+
+###
+GET http://localhost/api/quizz/my-quizzes?
+    request={{$placeholder}}&
+    quizzStatus={{$placeholder}}&
+    Page={{$placeholder}}&
+    Size={{$placeholder}}
+
+###
+POST http://localhost/api/quizz/{{quizzId}}/question
+Content-Type: application/json
+
+###
+DELETE http://localhost/api/quizz/{{quizzId}}/question/{{questionId}}
+
+###
+PUT http://localhost/api/quizz/{{quizzId}}/question/{{questionId}}
+Content-Type: application/json
+
+###
+POST http://localhost/api/auth/register
+Content-Type: application/json
+
+###
+POST http://localhost/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "",
+  "password": ""
+}
+
+###
+GET http://localhost/api/auth/me
+
+###
+GET http://localhost/api/auth/users/{{id}}
+
+###
+PUT http://localhost/api/auth/users/{{id}}
+Content-Type: application/json
+
+###
+GET http://localhost/api/auth/check-username/{{username}}
+
+###
+GET http://localhost/api/auth/check-email/{{email}}
+
+###
+GET http://localhost/api/auth/users?
+    Page={{$placeholder}}&
+    Size={{$placeholder}}&
+    request={{$placeholder}}
+
+###
+POST http://localhost/api/genre
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+###
+GET http://localhost/api/genre
+
+###
+PUT http://localhost/api/genre/{{id}}
+Content-Type: application/json
+
+###
+GET http://localhost/api/genre/{{id}}
+
+###
+DELETE http://localhost/api/genre/{{id}}
+
+###
+POST http://localhost/api/group
+Content-Type: application/json
+
+###
+PUT http://localhost/api/group/{{id}}?
+    request={{$placeholder}}&
+    isOwner={{$placeholder}}
+    Content-Type: application/json
+
+###
+GET http://localhost/api/group/{{id}}?
+    request={{$placeholder}}&
+    isOwner={{$placeholder}}&
+    Page={{$placeholder}}&
+    Size={{$placeholder}}
+
+###
+DELETE http://localhost/api/group/{{id}}?
+    request={{$placeholder}}&
+    isOwner={{$placeholder}}
+
+###
+GET http://localhost/api/group/my-groups?
+    request={{$placeholder}}&
+    isOwner={{$placeholder}}&
+    Page={{$placeholder}}&
+    Size={{$placeholder}}
+
+###
+GET http://localhost/api/group/{{groupId}}/quizz?
+    request={{$placeholder}}&
+    Page={{$placeholder}}&
+    Size={{$placeholder}}
+
+###
+POST http://localhost/api/group/member
+Content-Type: application/json
+
+###
+DELETE http://localhost/api/group/{{groupId}}/member/{{userId}}
+
+###
+POST http://localhost/api/group/leave
+Content-Type: application/json
+
+{
+  "groupId": ""
+}
+
+###
+GET http://localhost/api/group/{{groupId}}/members?
+    request={{$placeholder}}&
+    Page={{$placeholder}}&
+    Size={{$placeholder}}
+
+###
+GET http://localhost/api/quizz/{{id}}?
+    request={{$placeholder}}&
+    quizzStatus={{$placeholder}}&
+    Page={{$placeholder}}&
+    Size={{$placeholder}}
+
+###
+DELETE http://localhost/api/quizz/{{id}}?
+    request={{$placeholder}}&
+    quizzStatus={{$placeholder}}
+
+###
+PATCH http://localhost/api/quizz/{{id}}?
+    request={{$placeholder}}&
+    quizzStatus={{$placeholder}}
+    Content-Type: application/json
+
+###
+POST http://localhost/api/quizz
+Content-Type: application/json
+
+###
+GET http://localhost/api/quizz/my-quizzes?
+    request={{$placeholder}}&
+    quizzStatus={{$placeholder}}&
+    Page={{$placeholder}}&
+    Size={{$placeholder}}
+
+###
+POST http://localhost/api/quizz/{{quizzId}}/question
+Content-Type: application/json
+
+###
+@quizzId = variable value
+@questionId = variable value
+DELETE http://localhost/api/quizz/{{quizzId}}/question/{{questionId}}
+
+###
+PUT http://localhost/api/quizz/{{quizzId}}/question/{{questionId}}
+Content-Type: application/json
+
+{
+  "id": "",
+  "content": "",
+  "image": "",
+  "durationSecond": 0,
+  "point": 0,
+  "answers": []
+}
