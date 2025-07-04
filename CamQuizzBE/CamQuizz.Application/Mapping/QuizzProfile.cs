@@ -2,6 +2,8 @@ using AutoMapper;
 using CamQuizz.Application.Dtos;
 using CamQuizz.Domain.Entities;
 
+namespace CamQuizz.Application.Mapping;
+
 public class QuizzProfile : Profile
 {
     public QuizzProfile()

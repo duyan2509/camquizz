@@ -15,6 +15,7 @@ namespace CamQuizz.Application.Dtos
         public Guid AuthorId { get; set; }
         public QuizzStatus Status { get; set; } = QuizzStatus.Public;
         public ICollection<CreateQuestionDto> Questions { get; set; } = new List<CreateQuestionDto>();
+        public List<Guid> GroupIds { get; set; } = new List<Guid>();
         public int NumberOfAttemps { get; set; } = 0;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
@@ -91,7 +92,7 @@ namespace CamQuizz.Application.Dtos
         public DateTime ShareAt { get; set; } = DateTime.UtcNow;
         public bool isHide { get; set; }
     }
-    public class UpdateAccessDdo
+    public class UpdateAccessDto
     {
         public QuizzStatus Status { get; set; }
         public List<Guid> GroupIds { get; set; } = new List<Guid>();

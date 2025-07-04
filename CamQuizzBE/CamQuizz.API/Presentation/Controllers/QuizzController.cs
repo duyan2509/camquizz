@@ -44,7 +44,8 @@ namespace CamQuizz.Presentation.Controllers
                 return BadRequest(ModelState);
             try
             {
-                var response = await _quizzService.CreateAsync(createQuizzDto);
+                var userId = GetCurrentUserId();
+                var response = await _quizzService.CreateAsync(userId, createQuizzDto);
                 return Ok(response);
             }
             catch (InvalidOperationException ex)
@@ -130,7 +131,7 @@ namespace CamQuizz.Presentation.Controllers
             }
         }
         [HttpPut("{quizzId}/question/{questionId}")]
-        public async Task<ActionResult<QuizzDto>> AddNewQuestion(Guid quizzId, Guid questionId, QuestionDto questionDto)
+        public async Task<ActionResult<QuizzDto>> UpdateQuestion(Guid quizzId, Guid questionId, QuestionDto questionDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -146,7 +147,7 @@ namespace CamQuizz.Presentation.Controllers
             }
         }
         [HttpPut("{quizzId}/access")]
-        public async Task<ActionResult<QuizzAccessDto>> UpdateQuizzAccess(Guid quizzId, UpdateAccessDdo updateAccessDto)
+        public async Task<ActionResult<QuizzAccessDto>> UpdateQuizzAccess(Guid quizzId, UpdateAccessDto updateAccessDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -191,6 +192,22 @@ namespace CamQuizz.Presentation.Controllers
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpGet("{quizzId}/questions")]
+        public async Task<ActionResult<PagedResultDto<QuestionDto>>> GetGroups(
+            [FromQuery] PagedRequestDto request, Guid quizzId
+        )
+        {
+            try
+            {
+                Guid userId = GetCurrentUserId();
+                var result = await _questionService.GetAllQuestionsAsync(quizzId, userId, request.Page, request.Size);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
             }
         }
     }

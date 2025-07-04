@@ -8,5 +8,6 @@ namespace CamQuizz.Application.Interfaces
         Task<QuestionDto> GetQuestionById(Guid questionId);
         Task<bool> DeleteAsync(Guid quizzId,Guid questionId, Guid userId);
         Task<QuestionDto> UpdateAsync(Guid quizzId,QuestionDto questionDto, Guid userId);
+        Task<PagedResultDto<QuestionDto>> GetAllQuestionsAsync(Guid quizzId, Guid userId, int page, int size);
     }
 }

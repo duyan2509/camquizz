@@ -1,4 +1,5 @@
-﻿using CamQuizz.Application.Dtos;
+﻿using System.Runtime.InteropServices;
+using CamQuizz.Application.Dtos;
 using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain;
 using CamQuizz.Domain.Entities;
@@ -43,28 +44,29 @@ namespace CamQuizz.Application.Services
             _quizzShareRepository = quizzShareRepository;
             _unitOfWork = unitOfWork;
         }
-        public async Task<QuizzDto> CreateAsync(CreateQuizzDto createQuizzDto)
+        public async Task<QuizzDto> CreateAsync(Guid authorId, CreateQuizzDto createQuizzDto)
         {
-            Guid createdQuizzId;
-            var genre = await _genreRepository.GetByIdAsync(createQuizzDto.GenreId);
-            if (genre == null)
-                throw new InvalidOperationException("Genre does not exist");
             if (!Enum.IsDefined(typeof(QuizzStatus), createQuizzDto.Status))
             {
                 throw new InvalidOperationException("Invalid Quizz Status");
             }
-            var author = await _userRepository.GetByIdAsync(createQuizzDto.AuthorId);
+            Guid createdQuizzId;
+            var genre = await _genreRepository.GetByIdAsync(createQuizzDto.GenreId);
+            if (genre == null)
+                throw new InvalidOperationException("Genre does not exist");
+
+            var author = await _userRepository.GetByIdAsync(authorId);
             if (author == null)
                 throw new InvalidOperationException("User does not exist");
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var quizInfo = new Quizz
                 {
                     Name = createQuizzDto.Name,
                     Image = createQuizzDto.Image,
-                    AuthorId = createQuizzDto.AuthorId,
+                    AuthorId = authorId,
                     GenreId = createQuizzDto.GenreId
                 };
                 var quizz = await _quizzRepository.AddAsync(quizInfo);
@@ -78,6 +80,13 @@ namespace CamQuizz.Application.Services
                         Point = createQuestion.Point
                     };
                     var question = await _questionRepository.AddAsync(questionInfo);
+                    var countTrueAnswers = 0;
+                    foreach (var createAnswerDto in createQuestion.Answers)
+                    {
+                        countTrueAnswers=createAnswerDto.IsCorrect?countTrueAnswers+1:countTrueAnswers;
+                        if(countTrueAnswers==2)
+                            throw new InvalidOperationException($"Question {createQuestion.Content} must be have only 1 true answer");
+                    }
                     var answers = createQuestion.Answers.Select(dto => new Answer
                     {
                         Content = dto.Content,
@@ -87,19 +96,21 @@ namespace CamQuizz.Application.Services
                     }).ToList();
                     await _answerRepository.AddRangeAsync(answers);
                 }
-
-
-                await transaction.CommitAsync();
+                
+                await UpdateQuizzAccessAsync(authorId, quizz.Id, new UpdateAccessDto
+                {
+                    Status = createQuizzDto.Status,
+                    GroupIds = createQuizzDto.GroupIds
+                });
+                await _unitOfWork.CommitAsync();
                 createdQuizzId = quizz.Id;
             }
             catch
             {
-                await transaction.RollbackAsync();
+                await _unitOfWork.RollbackAsync();
                 throw;
             }
             return await GetFullQuizzByIdAsync(createdQuizzId);
-
-
         }
 
         public async Task<QuizzDto> GetFullQuizzByIdAsync(Guid id)
@@ -183,7 +194,7 @@ namespace CamQuizz.Application.Services
                 throw new UnauthorizedAccessException("Only author can view access to quizz.");
             return _mapper.Map<QuizzAccessDto>(quizz);
         }
-        public async Task<QuizzAccessDto> UpdateQuizzAccessAsync(Guid quizzId, Guid userId, UpdateAccessDdo updateAccessDto)
+        public async Task<QuizzAccessDto> UpdateQuizzAccessAsync(Guid quizzId, Guid userId, UpdateAccessDto updateAccessDto)
         {
             var quizz = await _quizzRepository.GetAccessQuizzByIdAsync(quizzId);
             if (quizz == null)

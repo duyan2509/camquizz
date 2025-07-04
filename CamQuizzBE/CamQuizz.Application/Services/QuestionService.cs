@@ -155,7 +155,25 @@ namespace CamQuizz.Application.Services
 
             return await GetQuestionById(questionDto.Id);
         }
-
+        public async Task<Dtos.PagedResultDto<QuestionDto>> GetAllQuestionsAsync(Guid quizzId, Guid userId, int page, int size)
+        {
+            var quizz = await _quizzRepository.GetFullByIdAsync(quizzId);
+            if (quizz == null)
+                throw new InvalidOperationException("Quizz is not found");
+            if(quizz.AuthorId != userId)
+                throw new InvalidOperationException("Only Author can get questions");
+            var result = await _questionRepository.GetPagedAsync(page, size);
+            var questions = result.Data
+                .Select(question => _mapper.Map<QuestionDto>(question))
+                .ToList();
+            return new Dtos.PagedResultDto<QuestionDto>
+            {
+                Data = questions,
+                Page = result.Page,
+                Size = result.Size,
+                Total = result.Total,
+            };
+        }
     }
 };
 
