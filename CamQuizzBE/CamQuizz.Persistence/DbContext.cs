@@ -20,8 +20,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Group> Groups { get; set; }
     public DbSet<QuizzShare> QuizzShares { get; set; }
     public DbSet<UserGroup> UserGroups { get; set; }
-
-
+    public DbSet<GroupMessage> GroupMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -118,6 +117,17 @@ public class ApplicationDbContext : DbContext
                 entity.GroupId
             })
             .IsUnique();
+            entity.HasOne(entity=>entity.LastReadMessage)
+                .WithOne()
+                .HasForeignKey<UserGroup>(u=>u.LastReadMessageId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
+        modelBuilder.Entity<GroupMessage>(entity =>
+        {
+            entity.HasOne(entity => entity.Group)
+                .WithMany(g => g.GroupMessages)
+                .HasForeignKey(entity => entity.GroupId)
+                .OnDelete(DeleteBehavior.NoAction);
         });
         // Global query filter for soft delete
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())

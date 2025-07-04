@@ -13,7 +13,6 @@ namespace CamQuizz.Domain.Entities
         public Guid OwnerId { get; set; }
         public virtual User Owner { get; set; }
         public virtual ICollection<QuizzShare> QuizzShares { get; set; } = new List<QuizzShare>();
-
-
+        public virtual ICollection<GroupMessage> GroupMessages { get; set; } = new List<GroupMessage>();
     }
 }

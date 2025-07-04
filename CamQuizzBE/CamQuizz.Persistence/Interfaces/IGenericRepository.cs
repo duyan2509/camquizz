@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace CamQuizz.Persistence.Interfaces;
 
 public interface IGenericRepository<T>
-    where T : BaseEntity
 {
     Task<T?> GetByIdAsync(Guid id);
     Task<IEnumerable<T>> GetAllAsync();

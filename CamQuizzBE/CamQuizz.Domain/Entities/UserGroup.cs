@@ -7,6 +7,8 @@ namespace CamQuizz.Domain.Entities
     {
         public Guid UserId { get; set; }
         public Guid GroupId { get; set; }
+        public Guid? LastReadMessageId { get; set; }
+        public virtual GroupMessage LastReadMessage { get; set; }
         public virtual User User { get; set; }
         public virtual Group Group { get; set; } 
     }

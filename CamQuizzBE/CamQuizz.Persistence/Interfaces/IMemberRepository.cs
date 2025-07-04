@@ -5,7 +5,8 @@ namespace CamQuizz.Persistence.Interfaces
 {
     public interface IMemberRepository : IGenericRepository<UserGroup>
     {
-        Task<UserGroup> GetByUserIdGroupIdAsync(Guid userId, Guid groupId);
+        Task<UserGroup?> GetByUserIdGroupIdAsync(Guid userId, Guid groupId);
         Task<PagedResultDto<UserGroup>> GetByGroupIdAsync(int page, int size, Guid groupId);
+        Task UpdateLastReadMessage(UserGroup member, Guid messageId);
     }
 }

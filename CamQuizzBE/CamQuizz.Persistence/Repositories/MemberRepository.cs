@@ -11,7 +11,7 @@ namespace CamQuizz.Persistence.Repositories
         : base(context, logger)
         {
         }
-        public async Task<UserGroup> GetByUserIdGroupIdAsync(Guid userId, Guid groupId)
+        public async Task<UserGroup?> GetByUserIdGroupIdAsync(Guid userId, Guid groupId)
         {
             return await _dbSet
                 .FirstOrDefaultAsync(member => member.UserId == userId && member.GroupId == groupId);
@@ -35,5 +35,10 @@ namespace CamQuizz.Persistence.Repositories
             };
         }
 
+        public async Task UpdateLastReadMessage(UserGroup member, Guid messageId)
+        {
+            member.LastReadMessageId = messageId;
+            await UpdateAsync(member);
+        }
     }
 }

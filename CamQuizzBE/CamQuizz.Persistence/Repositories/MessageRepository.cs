@@ -1,0 +1,42 @@
+﻿using CamQuizz.Domain.Entities;
+using CamQuizz.Persistence.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+namespace CamQuizz.Persistence.Repositories;
+public class MessageRepository : GenericRepository<GroupMessage>, IMessageRepository
+{
+    public MessageRepository(ApplicationDbContext context, ILogger<GroupMessage> logger)
+        : base(context, logger)
+
+    {
+    }
+
+
+    public async Task<PagedResultDto<GroupMessage>> GetGroupMessageAsync(Guid groupId, int page, int size)
+    {
+        var query =  _dbSet.AsNoTracking()
+            .Include(m=>m.User)
+            .Where(x => x.GroupId == groupId);
+        var total = await query.CountAsync();
+        var messages = await _dbSet
+            .Skip(size * (page - 1))
+            .Take(size)
+            .ToListAsync();
+        return new PagedResultDto<GroupMessage>
+        {
+            Data = messages,
+            Total = total,
+            Page = page,
+            Size = size
+        };
+    }
+
+    public async Task<GroupMessage?> GetUserMessageAsync(Guid messageId)
+    {
+        return await _dbSet
+            .Include(m => m.User)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(m => m.Id == messageId);
+    }
+}    
