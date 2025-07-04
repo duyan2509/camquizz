@@ -8,5 +8,7 @@ namespace CamQuizz.Persistence.Interfaces
         Task<UserGroup?> GetByUserIdGroupIdAsync(Guid userId, Guid groupId);
         Task<PagedResultDto<UserGroup>> GetByGroupIdAsync(int page, int size, Guid groupId);
         Task UpdateLastReadMessage(UserGroup member, Guid messageId);
+        Task<List<UserGroup>> GetAllReceiversAsync(Guid groupId, Guid senderId);
+
     }
 }

@@ -17,9 +17,10 @@ public class MessageRepository : GenericRepository<GroupMessage>, IMessageReposi
     {
         var query =  _dbSet.AsNoTracking()
             .Include(m=>m.User)
-            .Where(x => x.GroupId == groupId);
+            .Where(x => x.GroupId == groupId)
+            .OrderByDescending(x=>x.CreatedAt);
         var total = await query.CountAsync();
-        var messages = await _dbSet
+        var messages = await query
             .Skip(size * (page - 1))
             .Take(size)
             .ToListAsync();

@@ -24,6 +24,7 @@ public class GroupProfile : Profile
         CreateMap<GroupMessage, MessageDto>()
             .ForMember(dest => dest.Time, opt => opt.MapFrom(src => src.CreatedAt))
             .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"))
+            .ForMember(dest => dest.SenderId, opt => opt.MapFrom(src => src.UserId))
             .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Message));
     }
 }

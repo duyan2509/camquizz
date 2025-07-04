@@ -3,6 +3,7 @@ using CamQuizz.Application.Dtos;
 using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain.Entities;
 using CamQuizz.Persistence.Interfaces;
+using Microsoft.AspNetCore.SignalR;
 
 namespace CamQuizz.Application.Services;
 
@@ -25,7 +26,7 @@ public class MessageService:IMessageService
     {
         var member = await _memberRepository.GetByUserIdGroupIdAsync(userId, groupId);
         if (member == null)
-            throw new NotImplementedException("Only member can view group message");
+            throw new UnauthorizedAccessException("Only member can view group message");
         var result = await _messageRepository.GetGroupMessageAsync(groupId, page, size);
         var messages = result.Data.Select(x => _mapper.Map<MessageDto>(x)).ToList();
         return new PagedResultDto<MessageDto>
@@ -37,7 +38,7 @@ public class MessageService:IMessageService
         };
     }
 
-    public async Task<MessageDto?> CreateMessageAsync(Guid groupId, Guid senderId, CreateMessageDto dto)
+    public async Task<CreateMessageResultDto?> CreateMessageAsync(Guid groupId, Guid senderId, CreateMessageDto dto)
     {
         var member = await _memberRepository.GetByUserIdGroupIdAsync(senderId, groupId);
         if (member == null)
@@ -49,7 +50,14 @@ public class MessageService:IMessageService
             Message = dto.Content,
         };
         await _messageRepository.AddAsync(message);
-        return await GetByIdAsync(message.Id);
+        var messageDto = await GetByIdAsync(message.Id);
+        var result = await _memberRepository.GetAllReceiversAsync(groupId,senderId);
+        List<Guid> receiverIds = result.Select(x => x.Id).ToList();
+        return new CreateMessageResultDto
+        {
+            Message = messageDto,
+            ReceiverIds = receiverIds
+        };
     }
 
     public async Task MarkAsReadAsync(Guid messageId, Guid userId, Guid groupId)

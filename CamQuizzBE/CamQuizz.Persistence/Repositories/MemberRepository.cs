@@ -40,5 +40,13 @@ namespace CamQuizz.Persistence.Repositories
             member.LastReadMessageId = messageId;
             await UpdateAsync(member);
         }
+
+        public Task<List<UserGroup>> GetAllReceiversAsync(Guid groupId, Guid userId)
+        {
+            var members =  _dbSet
+                .Include(ug => ug.User)
+                .Where(member => member.GroupId == groupId && member.UserId!=userId).ToList();
+            return Task.FromResult(members);
+        }
     }
 }
