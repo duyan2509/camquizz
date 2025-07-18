@@ -6,7 +6,8 @@ import UserProfile from '../pages/UserProfile';
 import Packages from '../pages/Packages';
 import ReportHistory from '../pages/ReportHistory'
 import HostingHistory from '../pages/HostingHistory';
-
+import { useDispatch } from 'react-redux';
+import {logout} from "../features/auth/authSlice"
 const items = [
   {
     key: 'user-profile',
@@ -34,10 +35,18 @@ const items = [
     children:  <Packages />,
   },
 ];
-const operations = <Button danger type="primary">Logout</Button>;
 const Profile = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
+
+  const operations = <Button danger type="primary" 
+  onClick={()=>handleLogout()}
+  >Logout</Button>;
+  const handleLogout=()=>{
+    dispatch(logout());
+    navigate('/login');
+  }
   const onChange = key => {
   location.pathname = `/profile/${key}`;
   navigate(location.pathname);

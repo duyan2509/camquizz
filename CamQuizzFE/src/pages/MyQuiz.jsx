@@ -1,5 +1,4 @@
 import React from 'react'
-import { AudioOutlined } from '@ant-design/icons';
 import QuizCard from '../components/QuizCard';
 import { Input, Radio, Select, Button, Pagination, Empty } from 'antd';
 const { Search } = Input;
