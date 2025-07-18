@@ -1,7 +1,9 @@
 using CamQuizz.Application.Dtos;
+using CamQuizz.Application.Exceptions;
 using CamQuizz.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CamQuizz.Presentation.Controllers;
 
@@ -48,24 +50,29 @@ public class GroupController : BaseController
             var response = await _groupService.UpdateAsync(userId, id, updateGroupDto);
             return Ok(response);
         }
-        catch (InvalidOperationException ex)
+        catch (ConflictException ex)
         {
             return BadRequest(new { message = ex.Message });
         }
     }
     [HttpGet("{id}")]
-    public async Task<ActionResult<FullGroupDto>> GetById(Guid id)
+    public async Task<ActionResult<GroupDto>> GetById(Guid id)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
         try
         {
-            var response = await _groupService.GetByIdAsync(id);
+            Guid userId = GetCurrentUserId();
+            var response = await _groupService.GetByIdAsync(userId, id);
             return Ok(response);
         }
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
         }
     }
     [HttpDelete("{id}")]
@@ -86,15 +93,19 @@ public class GroupController : BaseController
         {
             return BadRequest(new { message = ex.Message });
         }
+        catch (DbUpdateException ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
     }
 
     [HttpGet("my-groups")]
     public async Task<ActionResult<PagedResultDto<GroupDto>>> GetGroups(
-               [FromQuery] PagedRequestDto request, [FromQuery] bool? isOwner
+               [FromQuery] PagedRequestDto request, [FromQuery] bool? isOwner, [FromQuery] string keyword=""
         )
     {
         Guid userId = GetCurrentUserId();
-        var result = await _groupService.GetGroupsAsync(request.Page, request.Size, isOwner, userId);
+        var result = await _groupService.GetGroupsAsync(keyword, request.Page, request.Size, isOwner, userId);
         return Ok(result);
     }
     [HttpGet("{groupId}/quizz")]
@@ -105,7 +116,7 @@ public class GroupController : BaseController
         try
         {
             Guid userId = GetCurrentUserId();
-            var result = await _groupService.GetGroupQuizzesAsync(request.Page, request.Size, userId, groupId);
+            var result = await _groupService.GetGroupQuizzesAsync(request.Page, request.Size, request.Keyword, userId, groupId);
             return Ok(result);
         }
         catch (InvalidOperationException ex)
@@ -225,9 +236,16 @@ public class GroupController : BaseController
             Guid ownerId = GetCurrentUserId();
             var result = await _groupService.DeleteQuizzShareAsync(ownerId, groupId, quizzId);
             if (result)
-                return Ok(new { success = true });
-            else
-                return StatusCode(500, new { message = "Unexpected error during member removal." });
+                return Ok(new
+                {
+                    success = true,
+                    message = "Quizz status is being Public because there no groups for private."
+                });
+            return Ok(new
+            {
+                success = true,
+                message = "Quizz is removed from group!"
+            });
         }
         catch (InvalidOperationException ex)
         {
@@ -239,6 +257,15 @@ public class GroupController : BaseController
         }
 
     }
+    //GetConversationsAsync
 
-
+    [HttpGet("conversations")]
+    public async Task<ActionResult<PagedResultDto<ConversationPreview>>> GetConversations(
+        [FromQuery] PagedRequestBasicDto request
+    )
+    {
+        Guid userId = GetCurrentUserId();
+        var result = await _memberService.GetConversationsAsync(request.Page, request.Size, userId);
+        return Ok(result);
+    }
 }

@@ -16,8 +16,11 @@ public class GroupDto
     public string Name { get; set; }
     public Guid Id { get; set; }
     public Guid OwnerId { get; set; }
-    public string OwnerName{ get; set; }
-    public string AmountSharedQuizz { get; set; }
+    public string OwnerName { get; set; }
+    public int AmountSharedQuizz { get; set; }
+    public int MemberCount { get; set; }
+    public DateTime CreatedAt { get; set; }
+
 }
 public class FullGroupDto
 {

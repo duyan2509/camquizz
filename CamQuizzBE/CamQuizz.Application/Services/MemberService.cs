@@ -1,13 +1,8 @@
-using System.Text;
 using CamQuizz.Application.Dtos;
 using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain.Entities;
 using CamQuizz.Domain;
-using CamQuizz.Persistence.Interfaces;
-using CamQuizz.Persistence;
 using AutoMapper;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 namespace CamQuizz.Application.Services;
 
 public class MemberService : IMemberService
@@ -20,21 +15,26 @@ public class MemberService : IMemberService
 
 
     private readonly IMapper _mapper;
-    private readonly ApplicationDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public MemberService(ApplicationDbContext context
+    private readonly IQuizzRepository _quizzRepository;
+
+    public MemberService(IUnitOfWork unitOfWork
         , IMemberRepository memberRepository
         , IUserRepository userRepository
         , IGroupRepository groupRepository
         , IQuizzShareRepository quizzShareRepository
-        , IMapper mapper)
+        , IMapper mapper
+        ,IQuizzRepository quizzRepository)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
         _memberRepository = memberRepository;
         _userRepository = userRepository;
         _groupRepository = groupRepository;
         _quizzShareRepository = quizzShareRepository;
         _mapper = mapper;
+        _quizzRepository = quizzRepository;
+        
     }
     // POST: /group/member: add member
     public async Task<UserGroupDto> CreateAsync(Guid ownerId, CreateMemberDto createMemberDto)
@@ -57,7 +57,7 @@ public class MemberService : IMemberService
             await _memberRepository.AddAsync(member);
             return _mapper.Map<UserGroupDto>(member);
         }
-        catch (DbUpdateException ex)
+        catch (Exception ex)
         when (ex.InnerException?.Message.Contains("duplicate") == true)
         {
             throw new InvalidOperationException("User is being a member.");
@@ -81,18 +81,25 @@ public class MemberService : IMemberService
         var member = await _memberRepository.GetByUserIdGroupIdAsync(userId, groupId); 
         if (member == null)
             throw new InvalidOperationException($"User is not a group member: {groupId}");
-        using var transaction = await _context.Database.BeginTransactionAsync();
+        await _unitOfWork.BeginTransactionAsync();
         try
         {
             var quizzShares = await _quizzShareRepository.GetByUserIdGroupIdAsync(userId, groupId);
-            await _quizzShareRepository.DeleteRangeAsync(quizzShares);
+            var enumerable = quizzShares as QuizzShare[] ?? quizzShares.ToArray();
+            foreach (var quizzShare in enumerable)
+            {
+                var quizz = await _quizzRepository.GetFullByIdAsync(quizzShare.QuizzId);
+                if (quizz is { QuizzShares.Count: 1 })
+                    await _quizzRepository.UpdateStatusASync(quizz, QuizzStatus.Public);
+            }
+            await _quizzShareRepository.DeleteRangeAsync(enumerable);
             await _memberRepository.HardDeleteAsync(member.Id);
-            await transaction.CommitAsync();
+            await _unitOfWork.CommitAsync();
             return true;
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync();
+            await _unitOfWork.RollbackAsync();
             throw new Exception("Error when removing member from group");
         }
     }
@@ -108,18 +115,25 @@ public class MemberService : IMemberService
         var member = await _memberRepository.GetByUserIdGroupIdAsync(userId, groupId);
         if (member == null)
             throw new InvalidOperationException($"User is not a group member: {groupId}");
-        using var transaction = await _context.Database.BeginTransactionAsync();
+        await _unitOfWork.BeginTransactionAsync();
         try
         {
             var quizzShares = await _quizzShareRepository.GetByUserIdGroupIdAsync(userId, groupId);
+            var enumerable = quizzShares as QuizzShare[] ?? quizzShares.ToArray();
+            foreach (var quizzShare in enumerable)
+            {
+                var quizz = await _quizzRepository.GetFullByIdAsync(quizzShare.QuizzId);
+                if (quizz is { QuizzShares.Count: 1 })
+                    await _quizzRepository.UpdateStatusASync(quizz, QuizzStatus.Public);
+            }
             await _quizzShareRepository.DeleteRangeAsync(quizzShares);
             await _memberRepository.HardDeleteAsync(member.Id);
-            await transaction.CommitAsync();
+            await _unitOfWork.CommitAsync();
             return true;
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync();
+            await _unitOfWork.RollbackAsync();
             throw new Exception("Error when leaving member from group");
         }
     }
@@ -139,7 +153,7 @@ public class MemberService : IMemberService
             .Select(ug => _mapper.Map<MemberDto>(ug.User))
             .ToList();
         members.ForEach(m => m.IsOwner = m.Id == group.OwnerId);
-        return new Dtos.PagedResultDto<MemberDto>
+        return new PagedResultDto<MemberDto>
             {
                 Data = members,
                 Page = page,
@@ -147,5 +161,10 @@ public class MemberService : IMemberService
                 Total = result.Total
             };
 
+    }
+
+    public async Task<PagedResultDto<ConversationPreview>> GetConversationsAsync(int page, int size, Guid userId)
+    {
+        return await _memberRepository.GetAllConversationsAsync(page,size,userId);
     }
 }

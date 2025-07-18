@@ -1,13 +1,11 @@
-using System.Text;
 using CamQuizz.Application.Dtos;
 using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain.Entities;
 using CamQuizz.Domain;
-using CamQuizz.Persistence.Interfaces;
-using CamQuizz.Persistence;
 using AutoMapper;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
+using CamQuizz.Application.Exceptions;
+
+
 namespace CamQuizz.Application.Services;
 
 public class GroupService : IGroupService
@@ -16,27 +14,28 @@ public class GroupService : IGroupService
     private readonly IMemberRepository _memberRepository;
     private readonly IQuizzShareRepository _quizzShareRepository;
     private readonly IQuizzRepository _quizzRepository;
+    private readonly IMessageRepository _messageRepository;
 
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    private readonly ApplicationDbContext _context;
 
-    public GroupService(ApplicationDbContext context
-        , IGroupRepository groupRepository
+    public GroupService(IGroupRepository groupRepository
         , IMemberRepository memberRepository
         , IQuizzShareRepository quizzShareRepository
         , IMapper mapper
-        ,IQuizzRepository quizzRepository
-        ,IUnitOfWork unitOfWork)
+        , IQuizzRepository quizzRepository
+        , IUnitOfWork unitOfWork
+        , IMessageRepository messageRepository)
     {
         _groupRepository = groupRepository;
         _memberRepository = memberRepository;
         _quizzShareRepository = quizzShareRepository;
         _quizzRepository = quizzRepository;
         _mapper = mapper;
-        _context = context;
         _unitOfWork = unitOfWork;
+        _messageRepository = messageRepository;
     }
+
     public async Task<GroupDto> UpdateAsync(Guid userId, Guid id, UpdateGroupDto updateGroupDto)
     {
         var group = await _groupRepository.GetGroupInfoIdAsync(id);
@@ -45,19 +44,10 @@ public class GroupService : IGroupService
         if (group.OwnerId != userId)
             throw new InvalidOperationException("Only Owner can update Group");
         group.Name = updateGroupDto.Name;
-        try
-        {
-            await _groupRepository.UpdateAsync(group);
-            return _mapper.Map<GroupDto>(group);
-        }
-        catch (DbUpdateException ex)
-        when (ex.InnerException is SqlException sqlEx &&
-                                            (sqlEx.Number == 2601 || sqlEx.Number == 2627))
-        {
-            throw new InvalidOperationException("Group name is existed for this user.");
-        }
-
+        await _groupRepository.UpdateNameAsync(group);
+        return _mapper.Map<GroupDto>(group);
     }
+
     public async Task<FullGroupDto> CreateAsync(Guid ownerId, CreateGroupDto createGroupDto)
     {
         var group = new Group
@@ -65,28 +55,27 @@ public class GroupService : IGroupService
             OwnerId = ownerId,
             Name = createGroupDto.Name
         };
-        using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            await _groupRepository.AddAsync(group);
+            await _unitOfWork.BeginTransactionAsync();
+            await _groupRepository.CreateAsync(group);
             var member = new UserGroup
             {
                 UserId = ownerId,
                 GroupId = group.Id
             };
             await _memberRepository.AddAsync(member);
-            transaction.CommitAsync();
-            return await GetByIdAsync(group.Id);
+            await _unitOfWork.CommitAsync();
+            return await GetFullByIdAsync(group.Id);
         }
-        catch (DbUpdateException ex)
-        when (ex.InnerException is SqlException sqlEx &&
-                                            (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+        catch (ConflictException)
         {
-            transaction.RollbackAsync();
-            throw new InvalidOperationException("Group name is existed for this user.");
+            await _unitOfWork.RollbackAsync();
+            throw;
         }
     }
-    public async Task<FullGroupDto> GetByIdAsync(Guid guid)
+
+    public async Task<FullGroupDto> GetFullByIdAsync(Guid guid)
     {
         var group = await _groupRepository.GetFullGroupByIdAsync(guid);
 
@@ -94,25 +83,61 @@ public class GroupService : IGroupService
             throw new InvalidOperationException("Group is not found");
         return _mapper.Map<FullGroupDto>(group);
     }
+
+    public async Task<GroupDto> GetByIdAsync(Guid userId, Guid groupId)
+    {
+        var member = await _memberRepository.GetByUserIdGroupIdAsync(userId, groupId);
+        if (member == null)
+            throw new UnauthorizedAccessException("Only member can view group detail");
+        var group = await _groupRepository.GetFullGroupByIdAsync(groupId);
+        if (group == null)
+            throw new InvalidOperationException("Group is not found");
+        return _mapper.Map<GroupDto>(group);
+    }
+
     public async Task<bool> DeleteAsync(Guid userId, Guid guid)
     {
-        var group = await _groupRepository.GetByIdAsync(guid);
+        var group = await _groupRepository.GetFullGroupByIdAsync(guid);
         if (group == null)
             throw new InvalidOperationException("Group is not found");
         if (group.OwnerId != userId)
             throw new InvalidOperationException("Only Owner can delete Group");
-        await _groupRepository.HardDeleteAsync(guid);
+        try
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            var members = await _memberRepository.GetAllMembersAsync(group.Id);
+            await _memberRepository.DeleteRangeAsync(members);
+            var quizzShares = group.QuizzShares;
+            var enumerable = quizzShares as QuizzShare[] ?? quizzShares.ToArray();
+            foreach (var quizzShare in enumerable)
+            {
+                var quizz = await _quizzRepository.GetFullByIdAsync(quizzShare.QuizzId);
+                if (quizz is { QuizzShares.Count: 1 })
+                    await _quizzRepository.UpdateStatusASync(quizz, QuizzStatus.Public);
+            }
 
-        return true;
-
+            await _quizzShareRepository.DeleteRangeAsync(enumerable);
+            var messages = await _messageRepository.GetGroupMessageAsync(group.Id);
+            await _messageRepository.DeleteRangeAsync(messages);
+            await _groupRepository.HardDeleteAsync(guid);
+            await _unitOfWork.CommitAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackAsync();
+            throw;
+        }
     }
-    public async Task<Dtos.PagedResultDto<GroupDto>> GetGroupsAsync(int page, int size, bool? isOwner, Guid userId)
+
+    public async Task<Dtos.PagedResultDto<GroupDto>> GetGroupsAsync(string query, int page, int size, bool? isOwner,
+        Guid userId)
     {
         var result = isOwner switch
         {
-            true => await _groupRepository.GetOwnerGroupsAsync(page, size, userId),
-            false => await _groupRepository.GetMemberGroupsAsync(page, size, userId),
-            _ => await _groupRepository.GetAllGroupsAsync(page, size, userId),
+            true => await _groupRepository.GetOwnerGroupsAsync(query, page, size, userId),
+            false => await _groupRepository.GetMemberGroupsAsync(query, page, size, userId),
+            _ => await _groupRepository.GetAllGroupsAsync(query, page, size, userId),
         };
         var groups = result.Data
             .Select(group => _mapper.Map<GroupDto>(group))
@@ -125,12 +150,16 @@ public class GroupService : IGroupService
             Size = result.Size
         };
     }
-    public async Task<Dtos.PagedResultDto<GroupQuizzInfoDto>> GetGroupQuizzesAsync(int page, int size, Guid userId, Guid groupId)
+
+    public async Task<Dtos.PagedResultDto<GroupQuizzInfoDto>> GetGroupQuizzesAsync(int page, int size, 
+        string? kw,
+        Guid userId,
+        Guid groupId)
     {
         var member = await _memberRepository.GetByUserIdGroupIdAsync(userId, groupId);
         if (member == null)
             throw new InvalidOperationException("Only Member can view shared quizzes");
-        var result = await _quizzShareRepository.GetQuizzesByGroupIdAsync(page, size, groupId, userId);
+        var result = await _quizzShareRepository.GetQuizzesByGroupIdAsync(page, size, kw, groupId, userId);
         var quizzes = result.Data
             .Select(quizz => _mapper.Map<GroupQuizzInfoDto>(quizz))
             .ToList();
@@ -142,29 +171,30 @@ public class GroupService : IGroupService
             Size = result.Size
         };
     }
+
     public async Task<bool> UpdateVisibleAsync(Guid userId, Guid groupId, Guid quizId, bool visible)
     {
-        var quizzShare = await _quizzShareRepository.GetByQuizzIdGroupIdAsync(quizId,groupId);
+        var quizzShare = await _quizzShareRepository.GetByQuizzIdGroupIdAsync(quizId, groupId);
         if (quizzShare == null)
             throw new InvalidOperationException("Quiz share is not found");
-        if (userId != quizzShare.Group.OwnerId) 
+        if (userId != quizzShare.Group.OwnerId)
             throw new UnauthorizedAccessException("Only Owner can update visible Group Quizz");
         await _quizzShareRepository.UpdateVisibleAsync(quizzShare, visible);
         return true;
     }
 
-    public async Task<List<GroupDto>> GetQuizzGroupsAsync(Guid userId, Guid quizId,  bool shared)
+    public async Task<List<GroupDto>> GetQuizzGroupsAsync(Guid userId, Guid quizId, bool shared)
     {
-        var groups=  await _groupRepository.GetQuizzGroupsAsync(quizId, shared);
+        var groups = await _groupRepository.GetQuizzGroupsAsync(quizId, shared);
         return _mapper.Map<List<GroupDto>>(groups);
     }
 
     public async Task<bool> DeleteQuizzShareAsync(Guid userId, Guid groupId, Guid quizId)
     {
-        var quizzShare = await _quizzShareRepository.GetByQuizzIdGroupIdAsync(quizId,groupId);
+        var quizzShare = await _quizzShareRepository.GetByQuizzIdGroupIdAsync(quizId, groupId);
         if (quizzShare == null)
             throw new InvalidOperationException("Quiz share is not found");
-        if(quizzShare.UserId != userId)
+        if (quizzShare.UserId != userId)
             throw new InvalidOperationException("Only Author can remove quizz from group");
         await _unitOfWork.BeginTransactionAsync();
         try
@@ -179,9 +209,9 @@ public class GroupService : IGroupService
             }
 
             await _unitOfWork.CommitAsync();
-            return true;
+            return !quizzShares.Any();
         }
-        catch (DbUpdateException ex)
+        catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
             throw new InvalidOperationException($"Error when delete quizz from group: {ex.Message}");
