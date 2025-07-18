@@ -1,7 +1,7 @@
+using CamQuizz.Application.Dtos;
 using CamQuizz.Domain.Entities;
-using Microsoft.AspNetCore.Mvc;
 
-namespace CamQuizz.Persistence.Interfaces;
+namespace CamQuizz.Application.Interfaces;
 
 public interface IGenericRepository<T>
 {

@@ -1,4 +1,4 @@
-using CamQuizz.Persistence.Interfaces;
+using CamQuizz.Application.Interfaces;
 using CamQuizz.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

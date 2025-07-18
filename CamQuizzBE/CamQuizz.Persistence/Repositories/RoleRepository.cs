@@ -1,6 +1,6 @@
+using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain.Entities;
 using CamQuizz.Domain;
-using CamQuizz.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace CamQuizz.Persistence.Repositories;

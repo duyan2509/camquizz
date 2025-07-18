@@ -1,5 +1,5 @@
-﻿using CamQuizz.Domain.Entities;
-using CamQuizz.Persistence.Interfaces;
+﻿using CamQuizz.Application.Interfaces;
+using CamQuizz.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace CamQuizz.Persistence.Repositories
@@ -29,6 +29,11 @@ namespace CamQuizz.Persistence.Repositories
             _dbSet.UpdateRange(answers);
             await _context.SaveChangesAsync();
             return answers;
+        }
+
+        public Task<Application.Dtos.PagedResultDto<Answer>> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,8 +1,8 @@
-using CamQuizz.Domain;
+using CamQuizz.Application.Dtos;
+using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
-namespace CamQuizz.Persistence.Interfaces;
+namespace CamQuizz.Application.Interfaces;
 
 public interface IUserRepository : IGenericRepository<User>
 {

@@ -1,8 +1,7 @@
 using CamQuizz.Domain.Entities;
 using CamQuizz.Application.Dtos;
-using CamQuizz.Persistence.Repositories;
 
-namespace CamQuizz.Persistence.Interfaces
+namespace CamQuizz.Application.Interfaces
 {
     public interface IMemberRepository : IGenericRepository<UserGroup>
     {

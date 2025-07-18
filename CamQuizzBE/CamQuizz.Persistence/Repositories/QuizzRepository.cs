@@ -1,6 +1,7 @@
-﻿using CamQuizz.Domain.Entities;
+﻿using CamQuizz.Application.Dtos;
+using CamQuizz.Application.Interfaces;
+using CamQuizz.Domain.Entities;
 using CamQuizz.Domain;
-using CamQuizz.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +21,7 @@ namespace CamQuizz.Persistence.Repositories
                     .ThenInclude(q => q.Answers)
                 .Include(q => q.Author)
                 .Include(q => q.Genre)
+                .Include(q=>q.QuizzShares)
                 .FirstOrDefaultAsync(q => q.Id == id);
         }
 

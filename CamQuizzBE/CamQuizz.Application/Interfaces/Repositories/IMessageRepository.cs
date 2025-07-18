@@ -1,6 +1,8 @@
-﻿using CamQuizz.Domain.Entities;
+﻿using CamQuizz.Application.Dtos;
+using CamQuizz.Application.Interfaces;
+using CamQuizz.Domain.Entities;
 
-namespace CamQuizz.Persistence.Interfaces;
+namespace CamQuizz.Application.Interfaces;
 
 public interface IMessageRepository:IGenericRepository<GroupMessage>
 {

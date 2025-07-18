@@ -1,8 +1,4 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using CamQuizz.Persistence.Interfaces;
 using CamQuizz.Persistence;
 public class UnitOfWork : IUnitOfWork
 {

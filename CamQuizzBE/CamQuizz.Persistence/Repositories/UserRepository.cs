@@ -1,5 +1,5 @@
+using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain.Entities;
-using CamQuizz.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

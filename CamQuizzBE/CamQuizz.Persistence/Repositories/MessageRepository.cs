@@ -1,5 +1,6 @@
-﻿using CamQuizz.Domain.Entities;
-using CamQuizz.Persistence.Interfaces;
+﻿using CamQuizz.Application.Dtos;
+using CamQuizz.Application.Interfaces;
+using CamQuizz.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -39,5 +40,12 @@ public class MessageRepository : GenericRepository<GroupMessage>, IMessageReposi
             .Include(m => m.User)
             .AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == messageId);
+    }
+
+    public async Task<IEnumerable<GroupMessage>> GetGroupMessageAsync(Guid groupId)
+    {
+        return await _dbSet.AsNoTracking()
+            .Where(message=>message.GroupId == groupId)
+            .ToListAsync();
     }
 }    

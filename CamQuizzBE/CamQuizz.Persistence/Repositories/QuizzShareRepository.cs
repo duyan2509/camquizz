@@ -1,5 +1,6 @@
+using CamQuizz.Application.Dtos;
+using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain.Entities;
-using CamQuizz.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -7,9 +8,12 @@ namespace CamQuizz.Persistence.Repositories
 {
     public class QuizzShareRepository : GenericRepository<QuizzShare>, IQuizzShareRepository
     {
+        private readonly ILogger<QuizzShare> _logger;
+
         public QuizzShareRepository(ApplicationDbContext context, ILogger<QuizzShare> logger)
         : base(context, logger)
         {
+            _logger = logger;
         }
         public async Task<IEnumerable<QuizzShare>> GetByUserIdGroupIdAsync(Guid userId, Guid groupId)
         {
@@ -30,7 +34,7 @@ namespace CamQuizz.Persistence.Repositories
 
         public async Task<bool> UpdateVisibleAsync(QuizzShare quizzShare, bool visible)
         {
-            quizzShare.IsHide=!visible;
+            quizzShare.IsHide=visible;
             await UpdateAsync(quizzShare);
             return true;
         }
@@ -41,6 +45,13 @@ namespace CamQuizz.Persistence.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<QuizzShare>> GetByGroupIddAsync(Guid groupId)
+        {
+            return await _dbSet
+                .Where(qs => qs.GroupId == groupId)
+                .ToListAsync();
+        }
+
         public async Task<bool> DeleteRangeAsync(IEnumerable<QuizzShare> quizzShares)
         {
             _dbSet.RemoveRange(quizzShares);
@@ -48,24 +59,24 @@ namespace CamQuizz.Persistence.Repositories
             return affectedRows > 0;
         }
 
-        public async Task<PagedResultDto<QuizzShare>> GetQuizzesByGroupIdAsync(int page, int size, Guid groupId, Guid userId)
+        public async Task<PagedResultDto<QuizzShare>> GetQuizzesByGroupIdAsync(int page, int size, string? kw, Guid groupId, Guid userId)
         {
-           var query = _dbSet.AsNoTracking()
-               .Include(qs => qs.Quizz)
-                    .ThenInclude(q => q.Questions)
-               .Include(qs => qs.Quizz)
-                    .ThenInclude(q => q.Genre)
-               .Include(qs => qs.User)
-               .Include(qs=>qs.Group)
-               .Where(qs => qs.GroupId == groupId
-                            &&(
-                                !qs.IsHide
-                                || qs.UserId == userId
-                                || qs.Group.OwnerId == userId
-                            ));
-               
-          
-
+            var query = _dbSet.AsNoTracking()
+                .Include(qs => qs.Quizz)
+                .ThenInclude(q => q.Questions)
+                .Include(qs => qs.Quizz)
+                .ThenInclude(q => q.Genre)
+                .Include(qs => qs.User)
+                .Include(qs => qs.Group)
+                .Where(qs => qs.GroupId == groupId
+                             && (
+                                 !qs.IsHide
+                                 || qs.UserId == userId
+                                 || qs.Group.OwnerId == userId
+                             ));
+            if (!string.IsNullOrEmpty(kw))
+                query = query.Where(qs => qs.Quizz.Name.Contains(kw));
+            
             int count = await query.CountAsync();
 
             var quizzes = await query

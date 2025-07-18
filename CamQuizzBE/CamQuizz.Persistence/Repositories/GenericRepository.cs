@@ -1,5 +1,6 @@
+using CamQuizz.Application.Dtos;
+using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain.Entities;
-using CamQuizz.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -117,5 +118,10 @@ public class GenericRepository<T> : IGenericRepository<T>
         await _dbSet.AddRangeAsync(entities);
         await _context.SaveChangesAsync();
     }
-    
+
+    public virtual async Task DeleteRangeAsync(IEnumerable<T> entities)
+    {
+        _dbSet.RemoveRange(entities);
+        await _context.SaveChangesAsync();
+    }
 }

@@ -1,7 +1,8 @@
-﻿using CamQuizz.Domain.Entities;
+﻿using CamQuizz.Application.Dtos;
+using CamQuizz.Domain.Entities;
 using CamQuizz.Domain;
 
-namespace CamQuizz.Persistence.Interfaces
+namespace CamQuizz.Application.Interfaces
 {
     public interface IQuizzRepository : IGenericRepository<Quizz>
     {

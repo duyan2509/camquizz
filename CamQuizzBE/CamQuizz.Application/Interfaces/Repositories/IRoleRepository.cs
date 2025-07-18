@@ -1,8 +1,7 @@
 using CamQuizz.Domain;
 using CamQuizz.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
-namespace CamQuizz.Persistence.Interfaces;
+namespace CamQuizz.Application.Interfaces;
 
 public interface IRoleRepository 
 {
