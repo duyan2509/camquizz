@@ -1,16 +1,13 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
 const RequireAuth = ({ allowedRoles }) => {
-  // const token = localStorage.getItem('access_token');
-  // const role = localStorage.getItem('role'); 
-  const token = "aa"
-  const role = "user"
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role'); 
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(role)) {
-    // Không đủ quyền
     return <Navigate to="/unauthorized" replace />;
   }
 

@@ -1,15 +1,19 @@
 import { BrowserRouter, useRoutes } from 'react-router-dom';
 import { userRoutes } from './routes/AppRoutes';
 import './App.css'
+import { store } from './store/store';
+import { Provider } from 'react-redux';
 function AppRoutes() {
   const routing = useRoutes(userRoutes);
   return routing;
 }
 function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <Provider store={store}>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </Provider>
   );
 }
 

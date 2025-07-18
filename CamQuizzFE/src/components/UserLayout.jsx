@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BookOutlined, PlusOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
+import React, { useState, useEffect} from 'react';
+import { BookOutlined, PlusOutlined, UserOutlined, TeamOutlined, MessageOutlined} from '@ant-design/icons';
 import { Input } from 'antd';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 const PAGES = {
@@ -8,14 +8,18 @@ const PAGES = {
   MyGroup: '/mygroup',
   Profile: '/profile',
   CreateQuiz: '/createquiz',
-  Login: '/login'
+  Login: '/login',
+  Message:'/messages'
 }
 const UserLayout = () => {
   const [activeTab, setActiveTab] = useState(PAGES.Home);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('token')?true:false);
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
   const navigate = useNavigate();
+  useEffect(()=>{
+    setIsLoggedIn(localStorage.getItem('token')?true:false);
+  },[localStorage.getItem('token')])
   const onChange = text => {
     console.log('onChange:', text);
   };
@@ -27,9 +31,9 @@ const UserLayout = () => {
     onInput,
   };
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-10 pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left Section: Logo and PIN */}
@@ -101,7 +105,21 @@ const UserLayout = () => {
                   <TeamOutlined className="text-sm" />
                   <span>My Group</span>
                 </button>
+                 <button
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${activeTab === PAGES.Message ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                  onClick={() => {
+                    setActiveTab(PAGES.Message)
+                    if (!isActive(PAGES.Message))
+                      navigate(PAGES.Message)
+                  }
+                  }
+                >
+                  <MessageOutlined className="text-sm" />
+                  <span>Messages</span>
+                </button>
               </nav>
+
 
               {/* Profile Icon */}
               {
