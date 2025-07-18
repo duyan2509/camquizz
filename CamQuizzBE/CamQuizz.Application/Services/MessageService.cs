@@ -2,8 +2,7 @@
 using CamQuizz.Application.Dtos;
 using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain.Entities;
-using CamQuizz.Persistence.Interfaces;
-using Microsoft.AspNetCore.SignalR;
+
 
 namespace CamQuizz.Application.Services;
 

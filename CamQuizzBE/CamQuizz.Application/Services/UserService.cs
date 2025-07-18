@@ -4,7 +4,6 @@ using CamQuizz.Application.Dtos;
 using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain.Entities;
 using CamQuizz.Domain;
-using CamQuizz.Persistence.Interfaces;
 
 namespace CamQuizz.Application.Services;
 
@@ -137,6 +136,7 @@ public class UserService : IUserService
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
             LastLoginAt = user.LastLoginAt,
+            Role = user.Role?.Name.ToString() ?? UserRole.User.ToString()
         };
     }
 

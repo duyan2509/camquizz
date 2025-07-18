@@ -3,7 +3,6 @@ using CamQuizz.Application.Dtos;
 using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain.Entities;
 using CamQuizz.Domain;
-using CamQuizz.Persistence.Interfaces;
 namespace CamQuizz.Application.Services;
 
 public class GenreService : IGenreService

@@ -3,17 +3,13 @@ using CamQuizz.Application.Dtos;
 using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain;
 using CamQuizz.Domain.Entities;
-using CamQuizz.Persistence;
-using CamQuizz.Persistence.Interfaces;
-using CamQuizz.Persistence.Repositories;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using AutoMapper;
 namespace CamQuizz.Application.Services
 {
     public class QuizzService : IQuizzService
     {
         private readonly IMapper _mapper;
-        private readonly ApplicationDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
         public readonly IQuizzRepository _quizzRepository;
         public readonly IQuestionRepository _questionRepository;
         public readonly IAnswerRepository _answerRepository;
@@ -21,8 +17,7 @@ namespace CamQuizz.Application.Services
         public readonly IGenreRepository _genreRepository;
         public readonly IGroupRepository _groupRepository;
         public readonly IQuizzShareRepository _quizzShareRepository;
-        public readonly IUnitOfWork _unitOfWork;
-        public QuizzService(ApplicationDbContext context,
+        public QuizzService(
             IQuizzRepository quizzRepository,
             IQuestionRepository questionRepository,
             IAnswerRepository answerRepository,
@@ -33,7 +28,6 @@ namespace CamQuizz.Application.Services
             IQuizzShareRepository quizzShareRepository,
             IUnitOfWork unitOfWork)
         {
-            _context = context;
             _quizzRepository = quizzRepository;
             _questionRepository = questionRepository;
             _answerRepository = answerRepository;

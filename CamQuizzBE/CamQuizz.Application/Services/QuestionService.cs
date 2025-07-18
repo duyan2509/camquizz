@@ -2,34 +2,28 @@
 using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain;
 using CamQuizz.Domain.Entities;
-using CamQuizz.Persistence;
-using CamQuizz.Persistence.Interfaces;
-using CamQuizz.Persistence.Repositories;
-using Humanizer;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using AutoMapper;
 namespace CamQuizz.Application.Services
 {
     public class QuestionService : IQuestionService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
         private readonly IMapper _mapper;
         public readonly IQuizzRepository _quizzRepository;
         public readonly IQuestionRepository _questionRepository;
         public readonly IAnswerRepository _answerRepository;
-        public QuestionService(ApplicationDbContext context,
+        public QuestionService(IUnitOfWork unitOfWork,
             IQuestionRepository questionRepository,
             IAnswerRepository answerRepository,
             IMapper mapper,
             IQuizzRepository quizzRepository)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
             _quizzRepository = quizzRepository;
             _questionRepository = questionRepository;
             _answerRepository = answerRepository;
             _mapper = mapper;
-            _context = context;
         }
 
         public async Task<QuestionDto> CreateAsync(CreateQuestionDto createQuestionDto, Guid quizzId, Guid userId)
@@ -97,7 +91,7 @@ namespace CamQuizz.Application.Services
                 throw new InvalidOperationException("Question is not found");
             if (questionDto.Answers == null)
                 throw new InvalidOperationException("Answer list must not be null");
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var currentAnswers = question.Answers.ToList();
@@ -145,11 +139,11 @@ namespace CamQuizz.Application.Services
                 if (questionDto.Point != 0)
                     question.Point = questionDto.Point;
                 await _questionRepository.UpdateAsync(question);
-                await transaction.CommitAsync();
+                await _unitOfWork.CommitAsync();
             }
             catch
             {
-                await transaction.RollbackAsync();
+                await _unitOfWork.RollbackAsync();
                 throw;
             }
 
