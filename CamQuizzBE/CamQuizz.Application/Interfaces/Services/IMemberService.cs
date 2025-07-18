@@ -14,4 +14,6 @@ public interface IMemberService
 
     // GET: /group/{groupId}/members: group with group user
     Task<PagedResultDto<MemberDto>> GetGroupMembersAsync(int page, int size, Guid groupId, Guid userId);    
+    Task<PagedResultDto<ConversationPreview>> GetConversationsAsync(int page, int size, Guid userId);    
+    
 }

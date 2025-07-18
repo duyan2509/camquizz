@@ -18,5 +18,6 @@ public interface IGenericRepository<T>
     Task<PagedResultDto<T>> GetPagedAsync(int pageNumber, int pageSize);
     Task<T?> GetByIdIncludingDeletedAsync(Guid id);
     Task AddRangeAsync(IEnumerable<T> entities);
+    Task DeleteRangeAsync(IEnumerable<T> entities);
 
 }

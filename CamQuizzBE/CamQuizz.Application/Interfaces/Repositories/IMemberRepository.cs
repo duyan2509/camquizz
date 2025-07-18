@@ -1,4 +1,5 @@
 using CamQuizz.Domain.Entities;
+using CamQuizz.Application.Dtos;
 using CamQuizz.Persistence.Repositories;
 
 namespace CamQuizz.Persistence.Interfaces
@@ -9,6 +10,8 @@ namespace CamQuizz.Persistence.Interfaces
         Task<PagedResultDto<UserGroup>> GetByGroupIdAsync(int page, int size, Guid groupId);
         Task UpdateLastReadMessage(UserGroup member, Guid messageId);
         Task<List<UserGroup>> GetAllReceiversAsync(Guid groupId, Guid senderId);
+        Task<IEnumerable<UserGroup>> GetAllMembersAsync(Guid groupId);
+        Task<PagedResultDto<ConversationPreview>> GetAllConversationsAsync(int page, int size, Guid userId);
 
     }
 }
