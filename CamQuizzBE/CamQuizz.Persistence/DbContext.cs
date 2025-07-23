@@ -118,8 +118,8 @@ public class ApplicationDbContext : DbContext
             })
             .IsUnique();
             entity.HasOne(entity=>entity.LastReadMessage)
-                .WithOne()
-                .HasForeignKey<UserGroup>(u=>u.LastReadMessageId)
+                .WithMany(message =>  message.LastReadMembers)
+                .HasForeignKey(u=>u.LastReadMessageId)
                 .OnDelete(DeleteBehavior.NoAction);
         });
         modelBuilder.Entity<GroupMessage>(entity =>
