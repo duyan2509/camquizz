@@ -143,6 +143,6 @@ export const useConversations = (credentials) => {
   }
   useEffect(() => {
     fetch();
-  }, [credentials.page])
-  return { data, total, loading, error };
+  }, [credentials.page, credentials.size])
+  return { data, total, loading, error,fetch };
 };

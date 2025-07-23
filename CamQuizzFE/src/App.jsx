@@ -3,6 +3,7 @@ import { userRoutes } from './routes/AppRoutes';
 import './App.css'
 import { store } from './store/store';
 import { Provider } from 'react-redux';
+import { SignalRProvider } from './context/SignalRContext'
 function AppRoutes() {
   const routing = useRoutes(userRoutes);
   return routing;
@@ -10,28 +11,14 @@ function AppRoutes() {
 function App() {
   return (
     <Provider store={store}>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      <SignalRProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </SignalRProvider>
     </Provider>
   );
 }
 
 
 export default App
-// Home: 
-// Header: logo, PIN code, Create Quizz button, My Quizz Tab, My Group Tab, Profile icon
-// Body: Quizz list, search bar, filter
-// 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//

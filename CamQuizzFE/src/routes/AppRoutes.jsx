@@ -33,6 +33,7 @@ export const userRoutes = [
                     { path: 'mygroup', element: <MyGroup /> },
                     { path: 'mygroup/:id', element: <DetailGroup /> },
                     { path: 'messages', element: <Messages /> },
+                    { path: 'messages/:id', element: <Messages /> },
                     {
                         path: 'profile',
                         element: <Profile />,

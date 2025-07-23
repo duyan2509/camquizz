@@ -31,9 +31,9 @@ const UserLayout = () => {
     onInput,
   };
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className={`flex flex-col min-h-screen bg-white ${activeTab===PAGES.Message?'overflow-hidden':''}`}>
       {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-10 pb-4">
+      <header className="h-[10%] bg-white shadow-sm border-b sticky top-0 z-10 pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left Section: Logo and PIN */}
@@ -157,11 +157,11 @@ const UserLayout = () => {
       </header>
 
       {/* Body placeholder to show the header in context */}
-      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+      <main className={`flex-grow max-w-7xl mx-auto sm:px-6 lg:px-8 py-8 w-full`}>
         <Outlet />
       </main>
       {/* Footer */}
-      <footer className="bg-white border-t">
+      <footer className="h-[10%] bg-white border-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-500">
           <span>&copy; {new Date().getFullYear()} CamQuizz. All rights reserved.</span>
         </div>
