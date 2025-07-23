@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Security.Claims;
+using CamQuizz.Application.Interfaces;
 using CamQuizz.Infrastructure.SignalR;
 using CamQuizz.Presentation.Hubs;
 
@@ -36,7 +37,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
-builder.Services.AddRouting(options => options.LowercaseUrls = true); 
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // Optional: Add Swagger for API docs
 builder.Services.AddEndpointsApiExplorer();
@@ -51,6 +52,14 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    });
+    options.AddPolicy("AllowFrontend", builder =>
+    {
+        builder
+            .WithOrigins("http://localhost:3001") 
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "super_secret_key";
@@ -76,7 +85,7 @@ builder
                 var accessToken = context.Request.Query["access_token"];
                 var path = context.HttpContext.Request.Path;
 
-                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chat"))
                 {
                     context.Token = accessToken;
                 }
@@ -134,7 +143,7 @@ if (app.Environment.IsDevelopment())
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
-app.UseCors();
+app.UseCors("AllowFrontend"); 
 app.UseAuthentication();
 app.UseAuthorization();
 
