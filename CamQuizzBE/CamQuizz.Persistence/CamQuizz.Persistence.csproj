@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CamQuizz.Application\CamQuizz.Application.csproj" />
     <ProjectReference Include="..\CamQuizz.Domain\CamQuizz.Domain.csproj" />
+    <PackageReference Include="Dapper" Version="2.1.66" />
 
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
@@ -19,10 +20,6 @@
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
 
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Interfaces\" />
   </ItemGroup>
 
   <PropertyGroup>
