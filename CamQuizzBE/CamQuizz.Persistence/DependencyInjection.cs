@@ -19,6 +19,11 @@ public static class DependencyInjection
         );
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IDbConnectionFactory>(_ =>
+        {
+            var connStr = configuration.GetConnectionString("DefaultConnection");
+            return new SqlConnectionFactory(connStr);
+        });
         // Register repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();

@@ -44,3 +44,10 @@ public class LeaveGroupDto
     [Required]
     public Guid GroupId { get; set; }
 }
+
+public class JoinGroupDto
+{
+    public Guid GroupId { get; set; }
+    public Guid? AfterId { get; set; }
+    public DateTime? AfterCreatedAt { get; set; }
+}

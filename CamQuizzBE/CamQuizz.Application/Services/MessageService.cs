@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CamQuizz.Application.Dtos;
+using CamQuizz.Application.Exceptions;
 using CamQuizz.Application.Interfaces;
 using CamQuizz.Domain.Entities;
 
@@ -21,19 +22,26 @@ public class MessageService:IMessageService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<PagedResultDto<MessageDto>> GetAllMessagesAsync(Guid userId, Guid groupId, int page, int size)
+    public async Task<PagedResultMessgeDto<MessageDto>> GetAllMessagesAsync(DateTime? afterCreatedAt, Guid? afterId, Guid userId, Guid groupId, int size)
     {
         var member = await _memberRepository.GetByUserIdGroupIdAsync(userId, groupId);
         if (member == null)
-            throw new UnauthorizedAccessException("Only member can view group message");
-        var result = await _messageRepository.GetGroupMessageAsync(groupId, page, size);
+            throw new ForbiddenException("Only member can view group message");
+        
+        var result = await _messageRepository.GetGroupMessageAsync(groupId, afterCreatedAt, afterId, size);
         var messages = result.Data.Select(x => _mapper.Map<MessageDto>(x)).ToList();
-        return new PagedResultDto<MessageDto>
+        foreach (var messageDto in messages)
+        {
+            Console.WriteLine($"create at: {messageDto.Time}");
+        }
+        return new PagedResultMessgeDto<MessageDto>
         {
             Data = messages,
-            Page = page,
+            Page = 0,
             Size = size,
-            Total = result.Total
+            Total = result.Total,
+            GroupName = member.Group.Name,
+            GroupId = member.GroupId
         };
     }
 
@@ -49,11 +57,13 @@ public class MessageService:IMessageService
             Message = dto.Content,
         };
         await _messageRepository.AddAsync(message);
+        await _memberRepository.UpdateLastReadMessage(member, message.Id);
         var messageDto = await GetByIdAsync(message.Id);
         var result = await _memberRepository.GetAllReceiversAsync(groupId,senderId);
-        List<Guid> receiverIds = result.Select(x => x.Id).ToList();
+        List<Guid> receiverIds = result.Select(x => x.UserId).ToList();
         return new CreateMessageResultDto
         {
+            GroupName = member.Group.Name,
             Message = messageDto,
             ReceiverIds = receiverIds
         };

@@ -15,6 +15,7 @@ namespace CamQuizz.Persistence.Repositories
         public async Task<UserGroup?> GetByUserIdGroupIdAsync(Guid userId, Guid groupId)
         {
             return await _dbSet
+                .Include(member=>member.Group)
                 .FirstOrDefaultAsync(member => member.UserId == userId && member.GroupId == groupId);
         }
         public async Task<PagedResultDto<UserGroup>> GetByGroupIdAsync(int page, int size, Guid groupId)
@@ -72,10 +73,11 @@ namespace CamQuizz.Persistence.Repositories
                         {
                             Message= m.Message,
                             SenderName = $"{m.User.LastName}",
-                            CreatedAt = m.CreatedAt
+                            CreatedAt = m.CreatedAt,
+                            Id = m.Id
                         })
                         .FirstOrDefault(),
-                    UnreadCount = ug.Group.GroupMessages.Count(m=>m.CreatedAt>=ug.LastReadMessage.CreatedAt)
+                    UnreadCount = ug.Group.GroupMessages.Count(m=>m.CreatedAt>ug.LastReadMessage.CreatedAt)
                 });
             
             int count = await query.CountAsync();
@@ -89,7 +91,8 @@ namespace CamQuizz.Persistence.Repositories
                     LastMessageAt = x.LastMessage?.CreatedAt,
                     SenderName = x.LastMessage?.SenderName ?? "(Chưa có tin nhắn)",
                     UnreadCount = x.UnreadCount,
-                    LastMessage = x.LastMessage?.Message ?? "Hãy gửi tin nhắn đầu tiên"
+                    LastMessage = x.LastMessage?.Message ?? "Hãy gửi tin nhắn đầu tiên",
+                    LastMessageId = x.LastMessage?.Id ?? null
                 })
                 .ToList();
             

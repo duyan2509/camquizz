@@ -6,7 +6,7 @@ namespace CamQuizz.Application.Interfaces;
 
 public interface IMessageRepository:IGenericRepository<GroupMessage>
 {
-    Task<PagedResultDto<GroupMessage>> GetGroupMessageAsync(Guid groupId, int page, int size);
+    Task<PagedResultDto<GroupMessage>> GetGroupMessageAsync(Guid groupId, DateTime? afterCreatedAt, Guid? afterId,  int size);
     Task<GroupMessage?> GetUserMessageAsync(Guid messageId);
     Task<IEnumerable<GroupMessage>> GetGroupMessageAsync(Guid groupId);
 

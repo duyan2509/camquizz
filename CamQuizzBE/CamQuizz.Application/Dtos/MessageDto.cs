@@ -16,6 +16,8 @@ public class CreateMessageDto
 
 public class CreateMessageResultDto
 {
+    public string GroupName { get; set; }
+
     public MessageDto? Message { get; set; }
     public List<Guid> ReceiverIds { get; set; } = new List<Guid>();
 }
@@ -32,6 +34,7 @@ public class ConversationPreview
     public Guid GroupId { get; set; }
     public string GroupName { get; set; }
     public string LastMessage { get; set; }
+    public Guid? LastMessageId { get; set; }
     public string SenderName { get; set; }
     public DateTime? LastMessageAt { get; set; }
     public int UnreadCount { get; set; }
