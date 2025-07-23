@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { login, reset } from '../features/auth/authSlice';
+import { login, reset } from '../../features/auth/authSlice';
 import { Button, Form, Input, Card, message, Flex } from 'antd';
 
 const Login = () => {

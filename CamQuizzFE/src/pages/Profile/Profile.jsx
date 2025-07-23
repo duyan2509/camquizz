@@ -1,13 +1,13 @@
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, Button } from 'antd';
-import AttemptHistory from '../pages/AttemptHistory';
-import UserProfile from '../pages/UserProfile';
-import Packages from '../pages/Packages';
-import ReportHistory from '../pages/ReportHistory'
-import HostingHistory from '../pages/HostingHistory';
+import AttemptHistory from './AttemptHistory';
+import UserProfile from './UserProfile';
+import Packages from './Packages';
+import ReportHistory from './ReportHistory'
+import HostingHistory from './HostingHistory';
 import { useDispatch } from 'react-redux';
-import {logout} from "../features/auth/authSlice"
+import {logout} from "../../features/auth/authSlice"
 const items = [
   {
     key: 'user-profile',

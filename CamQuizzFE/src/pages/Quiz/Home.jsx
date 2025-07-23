@@ -1,5 +1,6 @@
 import React from 'react'
-import QuizCard from '../components/QuizCard';
+import { AudioOutlined } from '@ant-design/icons';
+import QuizCard from '../../components/QuizCard';
 import { Input, Radio, Select, Button, Pagination, Empty } from 'antd';
 const { Search } = Input;
 const mockData = [
@@ -24,7 +25,7 @@ const mockData = [
   { id: 19, name: 'Astronomy Basics', category: 'Science', numberQuestions: 9, numberAttempts: 19, createAt: '2023-11-05' },
   { id: 20, name: 'Civics & Government', category: 'Social Studies', numberQuestions: 10, numberAttempts: 24, createAt: '2023-11-07' },
 ];
-const MyQuiz = () => {
+const Home = () => {
   const [popularSort, setPopularSort] = React.useState('popular');
   const [timeSort, setTimeSort] = React.useState('newest');
   const [pagination, setPagination] = React.useState({
@@ -82,7 +83,7 @@ const MyQuiz = () => {
           mockData !== null && mockData.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
               {mockData.map(quiz =>
-                <QuizCard quiz={quiz} key={quiz.id} guest={false} />
+                <QuizCard quiz={quiz} key={quiz.id} />
               )}
             </div>
           ) :
@@ -101,4 +102,4 @@ const MyQuiz = () => {
   )
 }
 
-export default MyQuiz
+export default Home
