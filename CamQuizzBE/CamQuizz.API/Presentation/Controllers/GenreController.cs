@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CamQuizz.Presentation.Controllers;
-
+[Authorize]
 public class GenreController : BaseController
 {
     private readonly IGenreService _genreService;
@@ -14,7 +14,6 @@ public class GenreController : BaseController
         _genreService = genreService;
     }
     [HttpPost]
-    [Authorize]
     public async Task<ActionResult<GenreDto>> CreateGenre([FromBody] CreateGenreDto createGenreDto)
     {
         if (!ModelState.IsValid)
@@ -30,7 +29,6 @@ public class GenreController : BaseController
         }
     }
     [HttpPut("{id}")]
-    [Authorize]
     public async Task<ActionResult<GenreDto>> UpdateGenre(Guid id, [FromBody] UpdateGenreDto updateGenreDto)
     {
         if (!ModelState.IsValid)
@@ -60,6 +58,7 @@ public class GenreController : BaseController
             return BadRequest(new { message = ex.Message });
         }
     }
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<ICollection<GenreDto>>> GetAll()
     {
@@ -74,7 +73,6 @@ public class GenreController : BaseController
         }
     }
     [HttpDelete("{id}")]
-    [Authorize]
     public async Task<ActionResult<GenreDto>> DeleteById(Guid id)
     {
         if (!ModelState.IsValid)

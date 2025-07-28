@@ -7,7 +7,7 @@ namespace CamQuizz.Application.Interfaces
     {
         Task<IEnumerable<QuizzShare>> GetByUserIdGroupIdAsync(Guid userId, Guid groupId);
         Task<QuizzShare?> GetByQuizzIdGroupIdAsync(Guid quizzId, Guid groupId);
-        Task<IEnumerable<QuizzShare>> GetByQuizzIdAsync(Guid quizzId);
+        Task<IEnumerable<QuizzShare>?> GetByQuizzIdAsync(Guid quizzId);
         Task<IEnumerable<QuizzShare>> GetByGroupIddAsync(Guid groupId);
         
         Task<bool> DeleteRangeAsync(IEnumerable<QuizzShare> quizzShares);

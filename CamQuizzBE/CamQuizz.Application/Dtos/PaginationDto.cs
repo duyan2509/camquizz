@@ -37,3 +37,10 @@ public class QuizzPagedRequestDto:PagedRequestBasicDto
     public bool Popular { get; set; } = true;
     public bool Newest {get; set; } = true;
 }
+
+public class QuestionPagedRequestDto:PagedRequestBasicDto
+{
+    public string? Keyword { get; set; }
+    public bool Newest {get; set; } = true;
+    
+}

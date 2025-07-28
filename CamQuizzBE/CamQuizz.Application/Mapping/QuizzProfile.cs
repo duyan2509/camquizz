@@ -40,6 +40,9 @@ public class QuizzProfile : Profile
         CreateMap<QuizzShare, AccessDto>()
             .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name))
             .ForMember(dest=>dest.ShareAt, opt=>opt.MapFrom(src=>src.CreatedAt));
+        CreateMap<Quizz, DetailQuizDto>()
+            .ForMember(src=>src.GenreName,opt=>opt.MapFrom(src=>src.Genre.Name))
+            .ForMember(src=>src.GroupIds, opt=> opt.MapFrom(src=>src.QuizzShares.Select(s=>s.GroupId)));
     }
     
 }

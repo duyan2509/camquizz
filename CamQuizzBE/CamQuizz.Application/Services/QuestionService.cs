@@ -13,17 +13,21 @@ namespace CamQuizz.Application.Services
         public readonly IQuizzRepository _quizzRepository;
         public readonly IQuestionRepository _questionRepository;
         public readonly IAnswerRepository _answerRepository;
+        public readonly ICloudStorageService _storageService;
         public QuestionService(IUnitOfWork unitOfWork,
             IQuestionRepository questionRepository,
             IAnswerRepository answerRepository,
             IMapper mapper,
-            IQuizzRepository quizzRepository)
+            IQuizzRepository quizzRepository,
+            ICloudStorageService storageService)
+
         {
             _unitOfWork = unitOfWork;
             _quizzRepository = quizzRepository;
             _questionRepository = questionRepository;
             _answerRepository = answerRepository;
             _mapper = mapper;
+            _storageService = storageService;
         }
 
         public async Task<QuestionDto> CreateAsync(CreateQuestionDto createQuestionDto, Guid quizzId, Guid userId)
@@ -33,27 +37,45 @@ namespace CamQuizz.Application.Services
                 throw new InvalidOperationException("Quizz is not found");
             if(quizz.AuthorId != userId)
                 throw new InvalidOperationException("Only Author can add new question");
-
-            var questionInfo = new Question
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
-                Content = createQuestionDto.Content,
-                Image = createQuestionDto.Image ?? "",
-                DurationSecond = createQuestionDto.DurationSecond,
-                Point = createQuestionDto.Point,
-                QuizzId = quizzId
-            };
-            var question = await _questionRepository.AddAsync(questionInfo);
-            var answers = createQuestionDto.Answers.Select(
-                answer => new Answer
+                if (createQuestionDto.ImageStream != null)
+                    createQuestionDto.Image =
+                        await _storageService.UploadAsync(createQuestionDto.ImageStream, Guid.NewGuid().ToString());
+                var questionInfo = new Question
                 {
-                    QuestionId = question.Id,
-                    Content = answer.Content,
-                    Image = answer.Image ?? "",
-                    IsCorrect = answer.IsCorrect,
-                }
-            ).ToList();
-            await _answerRepository.AddRangeAsync(answers);
-            return await GetQuestionById(question.Id);
+                    Content = createQuestionDto.Content,
+                    Image = createQuestionDto.Image ?? "",
+                    DurationSecond = createQuestionDto.DurationSecond,
+                    Point = createQuestionDto.Point,
+                    QuizzId = quizzId
+                };
+                var question = await _questionRepository.AddAsync(questionInfo);
+                int trueAnswers = 0;
+                var answers = createQuestionDto.Answers.Select(
+                    answer =>
+                    {
+                        if(answer.IsCorrect) trueAnswers++;
+                        if(trueAnswers == 2)
+                            throw new InvalidOperationException("Question must be 1 true answer");
+                        return new Answer
+                        {
+                            QuestionId = question.Id,
+                            Content = answer.Content,
+                            Image = answer.Image ?? "",
+                            IsCorrect = answer.IsCorrect,
+                        };
+                    }).ToList();
+                await _answerRepository.AddRangeAsync(answers);
+                await _unitOfWork.CommitAsync();
+                return await GetQuestionById(question.Id);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
         }
         public async Task<QuestionDto> GetQuestionById(Guid questionId)
         {
@@ -67,26 +89,28 @@ namespace CamQuizz.Application.Services
             var question = await _questionRepository.GetFullQuestionByIdAsync(questionId);
             if (question == null)
                 throw new InvalidOperationException("Question is not found");
-            var quizz = await _quizzRepository.GetFullByIdAsync(quizzId);
+            var quizz = await _quizzRepository.GetByIdAsync(quizzId);
             if (quizz == null)
                 throw new InvalidOperationException("Quizz is not found");
             if(quizz.AuthorId != userId)
-                throw new InvalidOperationException("Only Author can delete new question");
-
-            if (quizz.Questions.Count == 1)
+                throw new InvalidOperationException("Only Author can delete question");
+            var quizQuestionCount = await _questionRepository.GetQuestionCountByQuizIdAsync(quizzId);
+            if (quizQuestionCount == 1)
                 throw new InvalidOperationException("Can't delete the only question on the test");
+            if(!string.IsNullOrEmpty(question.Image))
+                await  _storageService.DeleteAsync(question.Image);
             await _questionRepository.HardDeleteAsync(questionId);
             return true;
         }
-        public async Task<QuestionDto> UpdateAsync(Guid quizzId, QuestionDto questionDto, Guid userId)
+        public async Task<QuestionDto> UpdateAsync(Guid quizzId, Guid questionId, QuestionDto questionDto, Guid userId)
         {
-            var quizz = await _quizzRepository.GetFullByIdAsync(quizzId);
+            var quizz = await _quizzRepository.GetByIdAsync(quizzId);
             if (quizz == null)
                 throw new InvalidOperationException("Quizz is not found while update question");
             if (quizz.AuthorId != userId)
                 throw new InvalidOperationException("Only Author can update question");
 
-            var question = await _questionRepository.GetFullQuestionByIdAsync(questionDto.Id);
+            var question = await _questionRepository.GetFullQuestionByIdAsync(questionId);
             if (question == null)
                 throw new InvalidOperationException("Question is not found");
             if (questionDto.Answers == null)
@@ -133,13 +157,21 @@ namespace CamQuizz.Application.Services
                 if (newAnswers.Any())
                     await _answerRepository.AddRangeAsync(newAnswers);
                 question.Content = questionDto.Content;
-                question.Image = questionDto.Image ?? "";
+                if (!string.IsNullOrEmpty(question.Image) && questionDto.ImageStream != null)
+                {
+                    await _storageService.DeleteAsync(question.Image);
+                    question.Image =
+                        await _storageService.UploadAsync(questionDto.ImageStream, Guid.NewGuid().ToString());
+                }
+                else if(questionDto.ImageStream != null)
+                    question.Image= await _storageService.UploadAsync(questionDto.ImageStream, Guid.NewGuid().ToString());
                 if (questionDto.DurationSecond != 0)
                     question.DurationSecond = questionDto.DurationSecond;
                 if (questionDto.Point != 0)
                     question.Point = questionDto.Point;
                 await _questionRepository.UpdateAsync(question);
                 await _unitOfWork.CommitAsync();
+                return await GetQuestionById(questionDto.Id);
             }
             catch
             {
@@ -147,16 +179,21 @@ namespace CamQuizz.Application.Services
                 throw;
             }
 
-            return await GetQuestionById(questionDto.Id);
         }
-        public async Task<Dtos.PagedResultDto<QuestionDto>> GetAllQuestionsAsync(Guid quizzId, Guid userId, int page, int size)
+        public async Task<Dtos.PagedResultDto<QuestionDto>> GetAllQuestionsAsync(
+            Guid quizzId, 
+            Guid userId, 
+            string? kw,
+            bool newest, 
+            int page, 
+            int size)
         {
             var quizz = await _quizzRepository.GetFullByIdAsync(quizzId);
             if (quizz == null)
                 throw new InvalidOperationException("Quizz is not found");
             if(quizz.AuthorId != userId)
                 throw new InvalidOperationException("Only Author can get questions");
-            var result = await _questionRepository.GetPagedAsync(page, size);
+            var result = await _questionRepository.GetQuestionsByQuizIdAsync(quizzId, kw, newest, page, size);
             var questions = result.Data
                 .Select(question => _mapper.Map<QuestionDto>(question))
                 .ToList();

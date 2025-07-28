@@ -14,6 +14,15 @@ namespace CamQuizz.Persistence.Repositories
         {
         }
 
+        public Task<Quizz?> GetDetailByIdAsync(Guid id)
+        {
+            return _dbSet
+                .Include(q => q.Genre)
+                .Include(q => q.QuizzShares)
+                .ThenInclude(qs => qs.Group)
+                .FirstOrDefaultAsync(q => q.Id == id);
+        }
+
         public Task<Quizz?> GetFullByIdAsync(Guid id)
         {
             return _dbSet
@@ -43,6 +52,8 @@ namespace CamQuizz.Persistence.Repositories
                 .ThenInclude(q => q.Answers)
                 .FirstOrDefaultAsync(q => q.Id == id);
         }
+
+
         public async Task<Quizz> UpdateStatusASync(Quizz quizz, QuizzStatus newStatus)
         {
             if(quizz.Status != newStatus)
@@ -50,36 +61,97 @@ namespace CamQuizz.Persistence.Repositories
             await UpdateAsync(quizz);
             return quizz;
         }
+        
+        public async Task<PagedResultDto<Quizz>> GetAllQuizzesAsync(    
+            string? kw,
+            Guid? categoryId,
+            bool popular,
+            bool newest,
+            int pageNumber,
+            int pageSize)
+        {
+            var query = _dbSet
+                .Include(q => q.Questions)
+                .Include(q=>q.Genre)                
+                .Where(q => q.Status==QuizzStatus.Public && q.Questions.Count>0 );
+            if (!string.IsNullOrWhiteSpace(kw))
+                query = query.Where(q => q.Name.ToLower().Contains(kw.ToLower()));
+            if(categoryId != null)
+                query = query.Where(q=>q.GenreId==categoryId);
+            if (popular && newest)
+            {
+                query = query
+                    .OrderByDescending(q => q.CreatedAt)
+                    .ThenByDescending(q => q.NumberOfAttemps);
+            }
+            else if (newest)
+            {
+                query = query.OrderByDescending(q => q.CreatedAt);
+            }
+            else if (popular)
+            {
+                query = query.OrderByDescending(q => q.NumberOfAttemps);
+            }
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            _logger.LogInformation("Quiz Count: {Count} ", items.Count);
+            
+            return new PagedResultDto<Quizz>
+            {
+                Data = items,
+                Total = totalCount,
+                Page = pageNumber,
+                Size = pageSize
+            };
+        }
 
         public async Task<PagedResultDto<Quizz>> GetMyQuizzesAsync(
+            string? kw,
+            Guid? categoryId,
+            bool popular,
+            bool newest,
             int pageNumber,
             int pageSize,
             QuizzStatus? quizzStatus,
             Guid userId)
         {
-            _logger.LogInformation("Page Number: {PageNumber} PageSize: {PageSize} QuizzStatus: {QuizzStatus} UserId: {UserId} ", pageNumber, pageSize, quizzStatus, userId);
 
-            var query = _dbSet.Where(q => q.AuthorId == userId);
-
-            if (quizzStatus != null)
+            var query = _dbSet
+                .Include(q => q.Questions)
+                .Include(q=>q.Genre)                
+                .Where(q => q.AuthorId == userId );
+            if (!string.IsNullOrWhiteSpace(kw))
+                query = query.Where(q => q.Name.ToLower().Contains(kw.ToLower()));
+            if(categoryId != null)
+                query = query.Where(q=>q.GenreId==categoryId);
+            if (popular && newest)
             {
-                query = query.Where(q => q.Status == quizzStatus);
+                query = query
+                    .OrderByDescending(q => q.CreatedAt)
+                    .ThenByDescending(q => q.NumberOfAttemps);
             }
-
+            else if (newest)
+            {
+                query = query.OrderByDescending(q => q.CreatedAt);
+            }
+            else if (popular)
+            {
+                query = query.OrderByDescending(q => q.NumberOfAttemps);
+            }
+            if (quizzStatus != null)
+                query = query.Where(q => q.Status == quizzStatus);
             var totalCount = await query.CountAsync();
 
             var items = await query
-                .Include(q => q.Questions)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
             _logger.LogInformation("Quiz Count: {Count} ", items.Count);
-
-            foreach (var item in items)
-            {
-                _logger.LogInformation("Quiz: {Id} - {Name} - Status: {Status} - QuestionCount: {QuestionCount}", item.Id, item.Name, item.Status, item.Questions.Count);
-            }
-
+            
             return new PagedResultDto<Quizz>
             {
                 Data = items,

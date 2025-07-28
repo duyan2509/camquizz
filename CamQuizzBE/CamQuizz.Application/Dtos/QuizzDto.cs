@@ -8,14 +8,14 @@ namespace CamQuizz.Application.Dtos
         [StringLength(120, MinimumLength = 2)]
 
         public string Name { get; set; }
+        public Stream? ImageStream { get; set; }
 
-        public string? Image { get; set; }
+        public string? Image { get; set; } = "";
 
         public Guid GenreId { get; set; }
-        public Guid AuthorId { get; set; }
         public QuizzStatus Status { get; set; } = QuizzStatus.Public;
-        public ICollection<CreateQuestionDto> Questions { get; set; } = new List<CreateQuestionDto>();
-        public List<Guid> GroupIds { get; set; } = new List<Guid>();
+        public ICollection<CreateQuestionDto>? Questions { get; set; } = new List<CreateQuestionDto>();
+        public List<Guid>? GroupIds { get; set; } = new List<Guid>();
         public int NumberOfAttemps { get; set; } = 0;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
@@ -46,11 +46,12 @@ namespace CamQuizz.Application.Dtos
         [StringLength(120, MinimumLength = 2)]
         public string? Name { get; set; }
 
-        public string? Image { get; set; }
+        public Stream? ImageStream { get; set; }
+
+        public string? Image { get; set; } = "";
+
 
         public Guid? GenreId { get; set; }
-        public QuizzStatus? Status { get; set; }
-
     }
     public class QuizzInfoDto
     {
@@ -95,7 +96,7 @@ namespace CamQuizz.Application.Dtos
     public class UpdateAccessDto
     {
         public QuizzStatus Status { get; set; }
-        public List<Guid> GroupIds { get; set; } = new List<Guid>();
+        public List<Guid>? GroupIds { get; set; } = new List<Guid>();
     }
     public class QuizzAccessDto
     {
@@ -113,5 +114,24 @@ namespace CamQuizz.Application.Dtos
     public class UpdateQuizzVisibleDto
     {
         public bool Visible {get; set;} 
+    }
+
+    public class DetailQuizDto
+    {
+        public Guid Id { get; set; }
+        [StringLength(120, MinimumLength = 2)]
+
+        public string Name { get; set; }
+
+        public string? Image { get; set; }
+
+        public Guid GenreId { get; set; }
+        public string GenreName { get; set; }
+
+        public QuizzStatus Status { get; set; } = QuizzStatus.Public;
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public List<Guid>? GroupIds { get; set; } = new List<Guid>();
+        
     }
 }

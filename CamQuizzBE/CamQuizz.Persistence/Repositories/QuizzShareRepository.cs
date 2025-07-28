@@ -38,7 +38,7 @@ namespace CamQuizz.Persistence.Repositories
             await UpdateAsync(quizzShare);
             return true;
         }
-        public async Task<IEnumerable<QuizzShare>> GetByQuizzIdAsync(Guid quizzId)
+        public async Task<IEnumerable<QuizzShare>?> GetByQuizzIdAsync(Guid quizzId)
         {
             return await _dbSet
                 .Where(qs => qs.QuizzId == quizzId)
@@ -68,7 +68,7 @@ namespace CamQuizz.Persistence.Repositories
                 .ThenInclude(q => q.Genre)
                 .Include(qs => qs.User)
                 .Include(qs => qs.Group)
-                .Where(qs => qs.GroupId == groupId
+                .Where(qs => qs.GroupId == groupId && qs.Quizz.Questions.Count>0
                              && (
                                  !qs.IsHide
                                  || qs.UserId == userId
