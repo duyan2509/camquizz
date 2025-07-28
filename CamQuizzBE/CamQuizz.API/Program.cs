@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Security.Claims;
 using CamQuizz.Application.Interfaces;
+using CamQuizz.Infrastructure.Cloudinary;
 using CamQuizz.Infrastructure.SignalR;
 using CamQuizz.Presentation.Hubs;
 
@@ -124,6 +125,7 @@ builder.Services.AddSwaggerGen(opt =>
 
 builder.Services.AddApplicationServices()
     .AddPersistence(builder.Configuration)
+    .AddCloudinaryInfrastructure(builder.Configuration)
     .AddSignalRInfrastructure()
     .AddSignalR();
 // ----------------------------

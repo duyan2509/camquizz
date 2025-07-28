@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CamQuizz.Application\CamQuizz.Application.csproj" />
     <ProjectReference Include="..\CamQuizz.Domain\CamQuizz.Domain.csproj" />
+    <PackageReference Include="CloudinaryDotNet" Version="1.27.6" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
