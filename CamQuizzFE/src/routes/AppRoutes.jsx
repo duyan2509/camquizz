@@ -17,6 +17,10 @@ import HostingHistory from '../pages/Profile/HostingHistory';
 import Register from '../pages/Auth/Register'
 import DetailGroup from '../pages/Group/DetailGroup';
 import Messages from '../pages/Messages/Messages';
+import QuizzSetting from '../components/QuizzSetting'
+import QuestionSetting from '../pages/Quiz/QuestionSetting';
+import QuizzInformation from '../pages/Quiz/QuizzInformation';
+import QuizzReport from '../pages/Quiz/QuizzReport';
 export const userRoutes = [
     {
         path: '/',
@@ -30,6 +34,16 @@ export const userRoutes = [
                 element: <RequireAuth allowedRoles={['User', 'Admin']} />,
                 children: [
                     { path: 'myquiz', element: <MyQuiz /> },
+                    {
+                        path: 'myquiz/:id',
+                        element: <QuizzSetting />,
+                        children: [
+                            { index: true, element: <QuizzInformation /> },
+                            { path: 'information', element: <QuizzInformation /> },
+                            { path: 'question-setting', element: <QuestionSetting /> },
+                            { path: 'report', element: <QuizzReport /> }
+                        ]
+                    },
                     { path: 'mygroup', element: <MyGroup /> },
                     { path: 'mygroup/:id', element: <DetailGroup /> },
                     { path: 'messages', element: <Messages /> },

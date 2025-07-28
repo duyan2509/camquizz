@@ -22,7 +22,7 @@ export const useGroups = (credentials) => {
       })
       .catch(setError)
       .finally(() => setLoading(false));
-  }, [credentials]);
+  }, [credentials.page, credentials.size, credentials.keyword, credentials.isOwner]);
 
   return { data, setData, total, loading, error };
 };

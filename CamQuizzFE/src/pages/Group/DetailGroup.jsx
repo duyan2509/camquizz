@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useGroup } from '../../hooks/group';
-import Unauthorized from '../Unauthorized';
+import Unauthorized from '../../components/Unauthorized';
 import { Typography, Spin } from 'antd';
 import { convertToVNTime } from '../../utils'
 import Members from '../../components/Group/Members';

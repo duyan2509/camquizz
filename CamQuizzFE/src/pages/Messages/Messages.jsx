@@ -2,7 +2,7 @@ import React, { useMemo, useState,useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Conversation from '../../components/Messages/Conversation'
 import Conversations from '../../components/Messages/Conversations'
-import Login from '../Login'
+import Login from '../Auth/Login'
 const Messages = () => {
     const navigate = useNavigate();
     const { id = null } = useParams();
