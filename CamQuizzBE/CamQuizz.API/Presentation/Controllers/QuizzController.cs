@@ -3,9 +3,11 @@ using CamQuizz.Application.Dtos;
 using CamQuizz.Application.Exceptions;
 using CamQuizz.Domain;
 using CamQuizz.Application.Interfaces;
+using CamQuizz.Presentation.Hubs;
 using CamQuizz.Request;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 
 namespace CamQuizz.Presentation.Controllers
 {
@@ -14,6 +16,7 @@ namespace CamQuizz.Presentation.Controllers
     [Authorize]
     public class QuizzController : BaseController
     {
+        private readonly IHubContext<QuizHub> _quizHub;
         private readonly IQuizzService _quizzService;
         private readonly IQuestionService _questionService;
         private readonly IGroupService _groupService;
@@ -22,12 +25,14 @@ namespace CamQuizz.Presentation.Controllers
         public QuizzController(IQuizzService quizzService
             , IQuestionService questionService
             , IGroupService groupService
-            , IMapper mapper)
+            , IMapper mapper
+            , IHubContext<QuizHub> quizHub)
         {
             _quizzService = quizzService;
             _questionService = questionService;
             _groupService = groupService;
             _mapper = mapper;
+            _quizHub = quizHub;
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<DetailQuizDto>> GetQuizzById(Guid id)
@@ -70,7 +75,7 @@ namespace CamQuizz.Presentation.Controllers
             }
         }
         [HttpDelete("{id}")]
-        public async Task<ActionResult<QuizzDto>> HardDelete(Guid id)
+        public async Task<ActionResult<bool>> HardDelete(Guid id)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -78,6 +83,10 @@ namespace CamQuizz.Presentation.Controllers
             {
                 var userId = GetCurrentUserId();
                 var response = await _quizzService.DeleteQuiz(userId, id);
+                await _quizHub.Clients.Group(id.ToString()).SendAsync("DeleteNotification", new MessageNotification
+                {
+                    Message = "This quiz is just deleted by Author, you can play but system won't save your results."
+                });
                 return Ok(response);
             }
             catch (InvalidOperationException ex)

@@ -91,5 +91,13 @@ namespace CamQuizz.Persistence.Repositories
                 Total = count
             };
         }
+
+        public async Task<bool> CheckAccessAsync(Guid userId, Guid quizzId)
+        {
+            return await _dbSet.AnyAsync(qs =>
+                qs.QuizzId == quizzId &&
+                qs.Group.UserGroups.Any(ug => ug.UserId == userId)
+            );
+        }
     }
 }

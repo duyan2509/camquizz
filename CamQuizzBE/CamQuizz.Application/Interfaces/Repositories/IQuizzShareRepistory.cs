@@ -13,5 +13,6 @@ namespace CamQuizz.Application.Interfaces
         Task<bool> DeleteRangeAsync(IEnumerable<QuizzShare> quizzShares);
         Task<bool> UpdateVisibleAsync(QuizzShare quizzShare, bool visible);
         Task<PagedResultDto<QuizzShare>> GetQuizzesByGroupIdAsync(int page, int size, string? kw, Guid groupId, Guid userId);
+        Task<bool> CheckAccessAsync(Guid userId, Guid quizzId);
     }
 }

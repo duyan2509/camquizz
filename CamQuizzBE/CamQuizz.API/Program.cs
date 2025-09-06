@@ -11,6 +11,7 @@ using System.Text.Json.Serialization;
 using System.Security.Claims;
 using CamQuizz.Application.Interfaces;
 using CamQuizz.Infrastructure.Cloudinary;
+using CamQuizz.Infrastructure.Redis;
 using CamQuizz.Infrastructure.SignalR;
 using CamQuizz.Presentation.Hubs;
 
@@ -126,6 +127,7 @@ builder.Services.AddSwaggerGen(opt =>
 builder.Services.AddApplicationServices()
     .AddPersistence(builder.Configuration)
     .AddCloudinaryInfrastructure(builder.Configuration)
+    .AddRedisInfrastructure(builder.Configuration)
     .AddSignalRInfrastructure()
     .AddSignalR();
 // ----------------------------
@@ -151,5 +153,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/chat");
-
+app.MapHub<QuizHub>("/quiz");
 app.Run();

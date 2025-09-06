@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using CamQuizz.Application.Interfaces;
+using CamQuizz.Application.Interfaces.Services;
 using CamQuizz.Application.Services;
 
 namespace CamQuizz.Application;
@@ -17,6 +18,8 @@ public static class DependencyInjection
         services.AddScoped<IGroupService, GroupService>();
         services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<IMessageService, MessageService>();
+        services.AddScoped<IGameService, GameService>();
+        
         services.AddScoped<JwtService>();    
 
         return services;
